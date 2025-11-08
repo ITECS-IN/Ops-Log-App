@@ -1,0 +1,415 @@
+
+import { useState, useEffect } from "react";
+import { Dialog as PreviewDialog, DialogContent as PreviewDialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import api from "@/lib/axios";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { useCompany } from "@/context/useCompany";
+
+interface Line {
+  _id: string;
+  lineName: string;
+}
+
+interface Machine {
+  _id: string;
+  machineName: string;
+  lineId: string | { _id: string; lineName: string };
+}
+
+interface AddLogForm {
+  lineId: string;
+  machineId: string;
+  operatorId: string;
+  shift: string;
+  noteType: string;
+  severity: number;
+  description: string;
+  downtimeStart: string;
+  downtimeEnd: string;
+  photo: File | null;
+  fileUrl?: string;
+  dateTime: string;
+  duration: number;
+  status: string;
+}
+
+type AddLogModalProps = {
+  lines?: Line[];
+  machines?: Machine[];
+  onSubmit: (data: AddLogForm) => void;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  editLog?: Partial<AddLogForm & { _id: string }>;
+  isEdit?: boolean;
+};
+
+export function AddLogModal({
+  lines,
+  machines,
+  onSubmit,
+  open,
+  setOpen,
+  editLog,
+  isEdit = false,
+}: AddLogModalProps) {
+  const [operators, setOperators] = useState<{ _id: string; name: string }[]>([]);
+  const { company } = useCompany();
+  const [form, setForm] = useState<AddLogForm>({
+    lineId: "",
+    machineId: "",
+    operatorId: "",
+    shift: "A",
+    noteType: "Observation",
+    severity: 1,
+    description: "",
+    downtimeStart: "",
+    downtimeEnd: "",
+    photo: null,
+    dateTime: new Date().toISOString(),
+    duration: 0,
+    status: "Open",
+  });
+  useEffect(() => {
+    if (open) {
+      api.get("/operators").then(res => setOperators(res.data));
+    }
+  }, [open]);
+
+  // Sync form state with editLog when opening in edit mode
+  useEffect(() => {
+    if (isEdit && editLog && open) {
+      // Helper to convert ISO to local datetime-local string
+      const toLocalInput = (iso?: string) =>
+        iso ? new Date(iso).toISOString().slice(0, 16) : "";
+      setForm({
+        lineId: (typeof editLog.lineId === "object" && editLog.lineId !== null ? (editLog.lineId as { _id: string })._id : editLog.lineId) || "",
+        machineId: (typeof editLog.machineId === "object" && editLog.machineId !== null ? (editLog.machineId as { _id: string })._id : editLog.machineId) || "",
+        operatorId: (typeof editLog.operatorId === "object" && editLog.operatorId !== null ? (editLog.operatorId as { _id: string })._id : editLog.operatorId) || "",
+        shift: editLog.shift || "A",
+        noteType: editLog.noteType || "Observation",
+        severity: editLog.severity || 1,
+        description: editLog.description || "",
+        downtimeStart: toLocalInput(editLog.downtimeStart),
+        downtimeEnd: toLocalInput(editLog.downtimeEnd),
+        photo: null,
+        dateTime: editLog.dateTime || new Date().toISOString(),
+        duration: editLog.duration || 0,
+        status: editLog.status || "Open",
+        fileUrl: editLog.fileUrl || "",
+      });
+      // Show preview for previously uploaded file
+      if (editLog.fileUrl) {
+        if (editLog.fileUrl.endsWith('.jpg') || editLog.fileUrl.endsWith('.jpeg') || editLog.fileUrl.endsWith('.png')) {
+          setFilePreview(editLog.fileUrl);
+        } else if (editLog.fileUrl.endsWith('.mp4') || editLog.fileUrl.endsWith('.webm')) {
+          setFilePreview(""); // handled by video preview below
+        } else {
+          setFilePreview("");
+        }
+      } else {
+        setFilePreview("");
+      }
+    } else if (!open) {
+      setForm({
+        lineId: "",
+        machineId: "",
+        operatorId: "",
+        shift: "A",
+        noteType: "Observation",
+        severity: 1,
+        description: "",
+        downtimeStart: "",
+        downtimeEnd: "",
+        photo: null,
+        dateTime: new Date().toISOString(),
+        duration: 0,
+        status: "Open",
+        fileUrl: "",
+      });
+      setFilePreview("");
+    }
+  }, [isEdit, editLog, open]);
+
+  const handleChange = <K extends keyof AddLogForm>(field: K, value: AddLogForm[K]) =>
+    setForm(f => ({ ...f, [field]: value }));
+
+  // const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files[0]) handleChange("photo", e.target.files[0]);
+  // };
+
+  const [fileUploading, setFileUploading] = useState(false);
+  const [filePreview, setFilePreview] = useState<string>("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    handleChange("photo", file);
+    setFilePreview("");
+    if (file.type.startsWith("image/")) {
+      setFilePreview(URL.createObjectURL(file));
+    } else if (file.type.startsWith("video/")) {
+      setFilePreview(""); // will show video preview after upload
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    let duration = 0;
+    if (form.downtimeStart && form.downtimeEnd) {
+      const start = new Date(form.downtimeStart).getTime();
+      const end = new Date(form.downtimeEnd).getTime();
+      duration = Math.max(0, Math.round((end - start) / 60000));
+    }
+    let fileUrl = form.fileUrl;
+    if (form.photo) {
+      setFileUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", form.photo);
+        formData.append("path", `records/media/${Date.now()}_${form.photo.name}`);
+        const res = await api.post("/records/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        fileUrl = res.data.url;
+        handleChange("fileUrl", fileUrl);
+        toast.success("File uploaded");
+      } finally {
+        setFileUploading(false);
+      }
+    }
+    const payload: Partial<AddLogForm> = {
+      lineId: form.lineId,
+      machineId: form.machineId,
+      operatorId: form.operatorId,
+      shift: form.shift,
+      noteType: form.noteType,
+      severity: form.severity,
+      description: form.description,
+      downtimeStart: form.downtimeStart || undefined,
+      downtimeEnd: form.downtimeEnd || undefined,
+      duration,
+      status: form.status,
+      fileUrl,
+    };
+    if (isEdit && editLog && editLog._id) {
+      await api.put(`/records/${editLog._id}`, payload);
+    } else {
+      await api.post("/records", payload);
+    }
+    toast.success("Log updated");
+    onSubmit(form);
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-w-xl w-full p-4 rounded-lg shadow-lg bg-white max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold mb-2">{isEdit ? "Edit Log" : "Add Log"}</DialogTitle>
+        </DialogHeader>
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2 flex flex-col gap-1">
+              <Label className="text-xs mb-1 font-medium">Date/Time</Label>
+              <Input
+                disabled
+                type="datetime-local"
+                value={form.dateTime.slice(0, 16)}
+                onChange={e => handleChange("dateTime", new Date(e.target.value).toISOString())}
+                required
+                className="h-9 text-sm bg-gray-50 border-gray-300 rounded"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs mb-1 font-medium">Operator</Label>
+              <Select value={form.operatorId} onValueChange={v => handleChange("operatorId", v)} disabled={isEdit}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select operator" /></SelectTrigger>
+                <SelectContent>
+                  {operators.map(op => <SelectItem key={op._id} value={op._id} className="text-sm">{op.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs mb-1 font-medium">Line</Label>
+              <Select value={form.lineId} onValueChange={v => handleChange("lineId", v)} disabled={isEdit}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select line" /></SelectTrigger>
+                <SelectContent>
+                  {Array.isArray(lines) ? lines.map(line => <SelectItem key={line._id} value={line._id} className="text-sm">{line.lineName}</SelectItem>) : null}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs mb-1 font-medium">Machine</Label>
+              <Select value={form.machineId} onValueChange={v => handleChange("machineId", v)} disabled={isEdit}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select machine" /></SelectTrigger>
+                <SelectContent>
+                  {Array.isArray(machines)
+                    ? machines
+                        .filter(m =>
+                            form.lineId && (typeof m.lineId === 'string' ? m.lineId === form.lineId : m.lineId?._id === form.lineId)
+                        )
+                        .map(m => (
+                          <SelectItem key={m._id} value={m._id} className="text-sm">
+                            {m.machineName}
+                          </SelectItem>
+                        ))
+                    : null}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs mb-1 font-medium">Shift</Label>
+              <Select value={form.shift} onValueChange={v => handleChange("shift", v)} disabled={isEdit}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select shift" /></SelectTrigger>
+                <SelectContent>
+                  {Array.isArray(company?.shiftTimings)
+                    ? (company.shiftTimings as { name: string; start?: string; end?: string }[]).map((shift, idx) => (
+                        <SelectItem key={shift.name || idx} value={shift.name} className="text-sm">
+                          {shift.name} {shift.start && shift.end ? `(${shift.start} - ${shift.end})` : ""}
+                        </SelectItem>
+                      ))
+                    : []}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs mb-1 font-medium">Note Type</Label>
+              <Select value={form.noteType} onValueChange={v => handleChange("noteType", v)} disabled={isEdit}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select note type" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Observation" className="text-sm">Observation</SelectItem>
+                  <SelectItem value="Breakdown" className="text-sm">Breakdown</SelectItem>
+                  <SelectItem value="Setup" className="text-sm">Setup</SelectItem>
+                  <SelectItem value="Quality" className="text-sm">Quality</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <Label className="text-xs mb-1 font-medium">Severity</Label>
+              <Slider min={1} max={5} step={1} value={[form.severity]} onValueChange={v => handleChange("severity", v[0])} className="flex-1 h-2" />
+              <span className="text-xs ml-2">{form.severity}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs mb-1 font-medium">Description</Label>
+              <Textarea
+                maxLength={500}
+                value={form.description}
+                onChange={e => handleChange("description", e.target.value)}
+                placeholder="Description"
+                className="min-h-12 text-sm bg-gray-50 border-gray-300 rounded"
+              />
+            </div>
+          </div>
+          {form.noteType === "Breakdown" && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs mb-1 font-medium">Downtime Start</Label>
+                <Input type="datetime-local" value={form.downtimeStart} onChange={e => handleChange("downtimeStart", e.target.value)} required className="h-9 text-sm bg-gray-50 border-gray-300 rounded" disabled={isEdit} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs mb-1 font-medium">Downtime End</Label>
+                <Input type="datetime-local" value={form.downtimeEnd} onChange={e => handleChange("downtimeEnd", e.target.value)} className="h-9 text-sm bg-gray-50 border-gray-300 rounded" disabled={isEdit} />
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs mb-1 font-medium">Status</Label>
+              <Select value={form.status} onValueChange={v => handleChange("status", v)}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Open" className="text-sm">Open</SelectItem>
+                  <SelectItem value="Closed" className="text-sm">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs mb-1 font-medium">Duration (min)</Label>
+              <Input value={form.downtimeStart && form.downtimeEnd ? Math.max(0, Math.round((new Date(form.downtimeEnd).getTime() - new Date(form.downtimeStart).getTime()) / 60000)) : form.duration} disabled className="h-9 text-sm bg-gray-50 border-gray-300 rounded" />
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs mb-1 font-medium">
+              Image/Video (max 12MB)
+            </Label>
+             <span className="block text-[11px] text-muted-foreground font-normal">( Supported: JPG, JPEG, PNG, WEBP, GIF, MP4, WEBM, MOV, AVI )</span>
+            <Input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime,video/x-msvideo"
+              onChange={handleFileChange}
+              disabled={fileUploading || isEdit}
+            />
+            {fileUploading && <span className="text-xs text-primary">Uploading...</span>}
+            {filePreview && form.photo && form.photo.type.startsWith("image/") && (
+              <img
+                src={filePreview}
+                alt="preview"
+                className="h-24 mt-2 rounded border object-contain cursor-pointer"
+                onClick={() => setPreviewOpen(true)}
+              />
+            )}
+            {form.fileUrl && !filePreview && form.photo && form.photo.type.startsWith("video/") && (
+              <video
+                src={form.fileUrl}
+                controls
+                className="h-24 mt-2 rounded border object-contain cursor-pointer"
+                onClick={() => setPreviewOpen(true)}
+              />
+            )}
+            {form.fileUrl && !form.photo && (form.fileUrl.endsWith('.mp4') || form.fileUrl.endsWith('.webm')) && (
+              <video
+                src={form.fileUrl}
+                controls
+                className="h-24 mt-2 rounded border object-contain cursor-pointer"
+                onClick={() => setPreviewOpen(true)}
+              />
+            )}
+            {form.fileUrl && !form.photo && (form.fileUrl.endsWith('.jpg') || form.fileUrl.endsWith('.jpeg') || form.fileUrl.endsWith('.png')) && (
+              <img
+                src={form.fileUrl}
+                alt="uploaded"
+                className="h-24 mt-2 rounded border object-contain cursor-pointer"
+                onClick={() => setPreviewOpen(true)}
+              />
+            )}
+            {/* File Preview Modal */}
+            <PreviewDialog open={previewOpen} onOpenChange={setPreviewOpen}>
+              <PreviewDialogContent className="flex flex-col items-center justify-center max-w-2xl w-full max-h-[90vh]">
+                {(() => {
+                  // Show image if available
+                  if (filePreview && form.photo && form.photo.type.startsWith("image/")) {
+                    return <img src={filePreview} alt="preview-large" className="max-h-[70vh] max-w-full rounded border object-contain" />;
+                  }
+                  // Show video if available
+                  if (form.fileUrl && ((form.photo && form.photo.type.startsWith("video/")) || form.fileUrl.endsWith('.mp4') || form.fileUrl.endsWith('.webm'))) {
+                    return <video src={form.fileUrl} controls autoPlay className="max-h-[70vh] max-w-full rounded border object-contain" />;
+                  }
+                  // Show uploaded image if available
+                  if (form.fileUrl && (form.fileUrl.endsWith('.jpg') || form.fileUrl.endsWith('.jpeg') || form.fileUrl.endsWith('.png'))) {
+                    return <img src={form.fileUrl} alt="uploaded-large" className="max-h-[70vh] max-w-full rounded border object-contain" />;
+                  }
+                  return null;
+                })()}
+              </PreviewDialogContent>
+            </PreviewDialog>
+          </div>
+          <div className="flex justify-end mt-2">
+            <Button type="submit" className="w-full sm:w-auto h-9 px-6 text-sm font-medium bg-black text-white rounded" disabled={fileUploading}>
+              {fileUploading ? "Uploading..." : "Submit"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

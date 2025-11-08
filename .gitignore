@@ -1,0 +1,21 @@
+# Node.js dependencies
+backend/node_modules/
+
+# Environment variables
+backend/.env
+backend/.env.*
+
+# Build output
+backend/dist/
+backend/build/
+
+# Logs
+backend/logs/
+backend/*.log
+
+# IDE/editor files
+backend/.vscode/
+backend/.idea/
+
+# OS generated files
+backend/.DS_Store

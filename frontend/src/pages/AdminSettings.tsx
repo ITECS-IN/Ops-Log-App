@@ -1,0 +1,243 @@
+
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+import { useEffect, useState, useRef } from "react";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+import { useCompany } from "@/context/useCompany";
+
+export default function AdminSettings() {
+  useEffect(() => {
+    document.title = "Admin Settings | Shift Log";
+  }, []);
+
+  const { company, loading: contextLoading, refresh } = useCompany();
+  const [companyName, setCompanyName] = useState("");
+  const [companyLogoUrl, setCompanyLogoUrl] = useState<string>("");
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [shiftTimings, setShiftTimings] = useState([
+    { name: "A", start: "", end: "" },
+    { name: "B", start: "", end: "" },
+    { name: "C", start: "", end: "" },
+  ]);
+  const [reportEmails, setReportEmails] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Sync state from context when company changes
+  useEffect(() => {
+    if (company) {
+      setCompanyName(company.companyName || "");
+      setCompanyLogoUrl(company.companyLogoUrl || company.logoUrl || "");
+      // Always show 3 shifts, fill with backend data if present
+      const defaultShifts = [
+        { name: "A", start: "", end: "" },
+        { name: "B", start: "", end: "" },
+        { name: "C", start: "", end: "" },
+      ];
+      if (Array.isArray(company.shiftTimings)) {
+        const shifts = [...defaultShifts];
+        (company.shiftTimings as { name: string; start: string; end: string }[]).forEach((s: { name: string; start: string; end: string }, i: number) => {
+          if (i < 3) shifts[i] = { ...shifts[i], ...s };
+        });
+        setShiftTimings(shifts);
+      } else {
+        setShiftTimings(defaultShifts);
+      }
+      setReportEmails(company.reportEmails || "");
+    }
+  }, [company]);
+
+  const handleShiftChange = (idx: number, field: 'name' | 'start' | 'end', value: string) => {
+    setShiftTimings(prev => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s));
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      // Only send non-empty shifts, max 3
+      const filteredShifts = shiftTimings
+        .map((s, i) => ({ ...s, name: s.name || String.fromCharCode(65 + i) }))
+        .filter(s => s.start && s.end)
+        .slice(0, 3);
+      await api.put("/company", {
+        companyName,
+        shiftTimings: filteredShifts,
+        reportEmails,
+        companyLogoUrl,
+      });
+      toast.success("Settings saved");
+      refresh();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const uploadLogoFile = async (file: File) => {
+    setLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("path", `company-logos/${file.name}`);
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setCompanyLogoUrl(res.data.url);
+      toast.success("Logo uploaded");
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadLogoFile(file);
+  };
+
+  const handleLogoDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) uploadLogoFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragActive(true);
+  };
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragActive(false);
+  };
+
+  const handleRemoveLogo = () => {
+    setCompanyLogoUrl("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  return (
+    <div className="py-4 md:py-8 mx-auto">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <Label>Company Logo</Label>
+            <div
+              className={`flex flex-col md:flex-row md:items-center gap-4 p-4 border-2 rounded-lg transition-all ${dragActive ? 'border-primary bg-primary/10' : 'border-dashed border-muted-foreground/30 bg-muted/30'}`}
+              onDrop={handleLogoDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDragEnd={handleDragLeave}
+            >
+              <div className="flex flex-col items-center gap-2 min-w-20">
+                {companyLogoUrl ? (
+                  <img
+                    src={companyLogoUrl}
+                    alt="Company Logo"
+                    className="h-20 w-20 object-contain border rounded bg-white shadow"
+                  />
+                ) : (
+                  <div className="h-20 w-20 flex items-center justify-center border rounded bg-white text-xs text-muted-foreground">No Logo</div>
+                )}
+                {companyLogoUrl && (
+                  <Button type="button" size="sm" variant="outline" onClick={handleRemoveLogo} disabled={logoUploading || loading} className="mt-1">Remove</Button>
+                )}
+              </div>
+              <div className="flex-1 flex flex-col gap-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleLogoChange}
+                  disabled={logoUploading || loading}
+                  className="max-w-xs"
+                />
+                <div className="text-xs text-muted-foreground">
+                  Drag & drop an image here, or click to select a file. Recommended: square PNG/JPG, max 1MB.
+                </div>
+                {logoUploading && <span className="text-xs text-primary">Uploading...</span>}
+              </div>
+            </div>
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="companyName">Company Name</Label>
+            <Input
+              id="companyName"
+              type="text"
+              placeholder="Enter company name"
+              value={companyName}
+              onChange={e => setCompanyName(e.target.value)}
+              disabled={loading || contextLoading}
+            />
+          </div>
+          <div className="mb-4">
+            <Label>Shift Timings (24-hour, max 3, 8h each)</Label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {shiftTimings.map((shift, idx) => (
+                <div key={idx} className="flex flex-col gap-1 p-2 rounded bg-muted/50 border">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Input
+                      type="text"
+                      value={shift.name}
+                      maxLength={1}
+                      onChange={e => handleShiftChange(idx, 'name', e.target.value.toUpperCase())}
+                      className="w-10 text-center font-bold"
+                      placeholder={String.fromCharCode(65 + idx)}
+                      disabled={loading || contextLoading}
+                    />
+                    <span className="text-xs text-muted-foreground">Shift</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="time"
+                      value={shift.start}
+                      onChange={e => handleShiftChange(idx, 'start', e.target.value)}
+                      className="w-24"
+                      step="60"
+                      disabled={loading || contextLoading}
+                    />
+                    <span className="text-xs">to</span>
+                    <Input
+                      type="time"
+                      value={shift.end}
+                      onChange={e => handleShiftChange(idx, 'end', e.target.value)}
+                      className="w-24"
+                      step="60"
+                      disabled={loading || contextLoading}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="reportEmails">Report Email List</Label>
+            <textarea
+              id="reportEmails"
+              className="border rounded px-2 py-1 w-full"
+              rows={2}
+              placeholder="Comma separated emails"
+              value={reportEmails}
+              onChange={e => setReportEmails(e.target.value)}
+              disabled={loading || contextLoading}
+            />
+          </div>
+          <Button
+            type="button"
+            onClick={handleSave}
+            disabled={loading || contextLoading}
+            className="mt-2"
+          >
+            {loading || contextLoading ? "Saving..." : "Save Settings"}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
