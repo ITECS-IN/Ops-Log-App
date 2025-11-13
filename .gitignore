@@ -19,3 +19,7 @@ backend/.idea/
 
 # OS generated files
 backend/.DS_Store
+
+
+backend/firebase-service-account.json
+firebase-service-account.json
