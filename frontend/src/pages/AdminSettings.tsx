@@ -15,6 +15,7 @@ import {
 import api from "@/lib/axios";
 import { toast } from "sonner";
 import { useCompany } from "@/context/useCompany";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminSettings() {
   useEffect(() => {
@@ -22,6 +23,7 @@ export default function AdminSettings() {
   }, []);
 
   const { company, loading: contextLoading, refresh } = useCompany();
+  const { t } = useLanguage();
   const [companyName, setCompanyName] = useState("");
   const [companyLogoUrl, setCompanyLogoUrl] = useState<string>("");
   const [logoUploading, setLogoUploading] = useState(false);
@@ -222,11 +224,11 @@ export default function AdminSettings() {
     <div className="py-4 md:py-8 mx-auto">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Settings</CardTitle>
+          <CardTitle className="text-lg">{t('admin.settings.title', 'Settings')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <Label>Company Logo</Label>
+            <Label>{t('common.companyLogo', 'Company Logo')}</Label>
             <div
               className={`flex flex-col md:flex-row md:items-center gap-4 p-4 border-2 rounded-lg transition-all ${dragActive ? 'border-primary bg-primary/10' : 'border-dashed border-muted-foreground/30 bg-muted/30'}`}
               onDrop={handleLogoDrop}
@@ -242,10 +244,14 @@ export default function AdminSettings() {
                     className="h-20 w-20 object-contain border rounded bg-white shadow"
                   />
                 ) : (
-                  <div className="h-20 w-20 flex items-center justify-center border rounded bg-white text-xs text-muted-foreground">No Logo</div>
+                  <div className="h-20 w-20 flex items-center justify-center border rounded bg-white text-xs text-muted-foreground">
+                    {t('admin.settings.noLogo', 'No Logo')}
+                  </div>
                 )}
                 {companyLogoUrl && (
-                  <Button type="button" size="sm" variant="outline" onClick={handleRemoveLogo} disabled={logoUploading || loading} className="mt-1">Remove</Button>
+                  <Button type="button" size="sm" variant="outline" onClick={handleRemoveLogo} disabled={logoUploading || loading} className="mt-1">
+                    {t('common.remove', 'Remove')}
+                  </Button>
                 )}
               </div>
               <div className="flex-1 flex flex-col gap-2">
@@ -258,7 +264,7 @@ export default function AdminSettings() {
                   className="max-w-xs"
                 />
                 <div className="text-xs text-muted-foreground">
-                  Drag & drop an image here, or click to select a file. Recommended: square PNG/JPG, max 1MB.
+                  {t('common.dragDrop', 'Drag & drop an image here, or click to select a file. Recommended: square PNG/JPG, max 1MB.')}
                 </div>
                 {cameraSupported && (
                   <Button
@@ -269,26 +275,26 @@ export default function AdminSettings() {
                     disabled={logoUploading || loading}
                     className="w-fit"
                   >
-                    Capture with Camera
+                    {t('common.captureWithCamera', 'Capture with Camera')}
                   </Button>
                 )}
-                {logoUploading && <span className="text-xs text-primary">Uploading...</span>}
+                {logoUploading && <span className="text-xs text-primary">{t('common.uploading', 'Uploading...')}</span>}
               </div>
             </div>
           </div>
           <div className="mb-4">
-            <Label htmlFor="companyName">Company Name</Label>
+            <Label htmlFor="companyName">{t('common.companyName', 'Company Name')}</Label>
             <Input
               id="companyName"
               type="text"
-              placeholder="Enter company name"
+              placeholder={t('common.enterCompanyName', 'Enter company name')}
               value={companyName}
               onChange={e => setCompanyName(e.target.value)}
               disabled={loading || contextLoading}
             />
           </div>
           <div className="mb-4">
-            <Label>Shift Timings (24-hour, max 3, 8h each)</Label>
+            <Label>{t('common.shiftTimings', 'Shift Timings (24-hour, max 3, 8h each)')}</Label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {shiftTimings.map((shift, idx) => (
                 <div key={idx} className="flex flex-col gap-1 p-2 rounded bg-muted/50 border">
@@ -302,7 +308,7 @@ export default function AdminSettings() {
                       placeholder={String.fromCharCode(65 + idx)}
                       disabled={loading || contextLoading}
                     />
-                    <span className="text-xs text-muted-foreground">Shift</span>
+                    <span className="text-xs text-muted-foreground">{t('common.shift', 'Shift')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Input
@@ -313,7 +319,7 @@ export default function AdminSettings() {
                       step="60"
                       disabled={loading || contextLoading}
                     />
-                    <span className="text-xs">to</span>
+                    <span className="text-xs">{t('common.to', 'to')}</span>
                     <Input
                       type="time"
                       value={shift.end}
@@ -328,12 +334,12 @@ export default function AdminSettings() {
             </div>
           </div>
           <div className="mb-4">
-            <Label htmlFor="reportEmails">Report Email List</Label>
+            <Label htmlFor="reportEmails">{t('common.reportEmailList', 'Report Email List')}</Label>
             <textarea
               id="reportEmails"
               className="border rounded px-2 py-1 w-full"
               rows={2}
-              placeholder="Comma separated emails"
+              placeholder={t('admin.settings.reportPlaceholder', 'Comma separated emails')}
               value={reportEmails}
               onChange={e => setReportEmails(e.target.value)}
               disabled={loading || contextLoading}
@@ -345,16 +351,16 @@ export default function AdminSettings() {
             disabled={loading || contextLoading}
             className="mt-2"
           >
-            {loading || contextLoading ? "Saving..." : "Save Settings"}
+            {loading || contextLoading ? t('common.saving', 'Saving...') : t('common.saveSettings', 'Save Settings')}
           </Button>
         </CardContent>
       </Card>
       <Dialog open={cameraOpen} onOpenChange={setCameraOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Capture Company Logo</DialogTitle>
+            <DialogTitle>{t('admin.settings.cameraTitle', 'Capture Company Logo')}</DialogTitle>
             <DialogDescription>
-              Use your device camera to capture a new photo for the company logo.
+              {t('admin.settings.cameraDescription', 'Use your device camera to capture a new photo for the company logo.')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -373,7 +379,7 @@ export default function AdminSettings() {
             </div>
             {cameraLoading && (
               <p className="text-xs text-muted-foreground text-center">
-                Initializing camera...
+                {t('common.initializingCamera', 'Initializing camera...')}
               </p>
             )}
             <canvas ref={canvasRef} className="hidden" />
@@ -384,14 +390,14 @@ export default function AdminSettings() {
               variant="outline"
               onClick={() => setCameraOpen(false)}
             >
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button
               type="button"
               onClick={handleCaptureFromCamera}
               disabled={!!cameraError || cameraLoading || logoUploading}
             >
-              Capture & Upload
+              {t('common.captureAndUpload', 'Capture & Upload')}
             </Button>
           </DialogFooter>
         </DialogContent>

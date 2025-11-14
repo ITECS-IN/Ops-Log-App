@@ -15,20 +15,23 @@ import { CompanyProvider } from "@/context/CompanyContext";
 import { LoginRedirectIfAuthenticated } from './components/auth/LoginRedirectIfAuthenticated';
 import { Toaster } from 'sonner';
 import NotFound from './pages/NotFound';
+import { LanguageProvider } from "@/context/LanguageContext";
 
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Toaster position="top-right" richColors />
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginRedirectIfAuthenticated><Login /></LoginRedirectIfAuthenticated>} />
-        <Route path="/signup" element={<LoginRedirectIfAuthenticated><Signup /></LoginRedirectIfAuthenticated>} />
-        <Route path="/dashboard" element={<ProtectedRoute><CompanyProvider><Layout><Dashboard /></Layout></CompanyProvider></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute><CompanyProvider><Layout><AdminPage /></Layout></CompanyProvider></ProtectedRoute>} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+    <LanguageProvider>
+      <Toaster position="top-right" richColors />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginRedirectIfAuthenticated><Login /></LoginRedirectIfAuthenticated>} />
+          <Route path="/signup" element={<LoginRedirectIfAuthenticated><Signup /></LoginRedirectIfAuthenticated>} />
+          <Route path="/dashboard" element={<ProtectedRoute><CompanyProvider><Layout><Dashboard /></Layout></CompanyProvider></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><CompanyProvider><Layout><AdminPage /></Layout></CompanyProvider></ProtectedRoute>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </LanguageProvider>
   </StrictMode>
 );

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { AppLogo } from "@/components/ui/AppLogo";
@@ -8,21 +8,26 @@ import firebaseApp from "@/lib/firebase";
 import { toast } from "sonner";
 import { useCompany } from "@/context/useCompany";
 import { Menu, X, Settings, LogOut } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 
 const PAGE_TITLES: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/manage-lines-machines": "Manage Lines & Machines",
-  "/admin": "Admin Panel",
-  "/login": "Login",
+  "/dashboard": "layout.titles.dashboard",
+  "/manage-lines-machines": "layout.titles.manageLinesMachines",
+  "/admin": "layout.titles.admin",
+  "/login": "layout.titles.login",
 };
 
 export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
-  const title = PAGE_TITLES[location.pathname] || "Shift Log App";
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const { t } = useLanguage();
   const { company, loading } = useCompany();
+  const title = useMemo(
+    () => t(PAGE_TITLES[location.pathname] || "layout.defaultTitle", "Shift Log App"),
+    [location.pathname, t]
+  );
 
   const handleLogout = async () => {
     const auth = getAuth(firebaseApp);
@@ -73,6 +78,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
           {/* Right: Desktop Buttons */}
           <div className="hidden sm:flex items-center gap-2">
+            <LanguageSwitcher size="sm" />
             <Button
               variant="ghost"
               onClick={() => navigate("/admin")}
@@ -80,8 +86,8 @@ export function Layout({ children }: { children: ReactNode }) {
               className="text-xs md:text-sm"
             >
               <Settings className="h-4 w-4 mr-1 md:mr-2" />
-              <span className="hidden md:inline">Admin Settings</span>
-              <span className="md:hidden">Admin</span>
+              <span className="hidden md:inline">{t("common.adminSettings", "Admin Settings")}</span>
+              <span className="md:hidden">{t("common.admin", "Admin")}</span>
             </Button>
             <Button
               variant="outline"
@@ -90,7 +96,7 @@ export function Layout({ children }: { children: ReactNode }) {
               className="text-xs md:text-sm"
             >
               <LogOut className="h-4 w-4 mr-1 md:mr-2" />
-              Logout
+              {t("common.logout", "Logout")}
             </Button>
           </div>
 
@@ -112,13 +118,14 @@ export function Layout({ children }: { children: ReactNode }) {
         {mobileMenuOpen && (
           <div className="sm:hidden bg-white border-t border-gray-200">
             <div className="px-4 py-3 space-y-3">
+              <LanguageSwitcher size="sm" className="justify-between" />
               {/* Mobile: Menu Items */}
               <button
                 onClick={handleAdminClick}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-left"
               >
                 <Settings className="h-5 w-5 text-gray-700" />
-                <span className="font-medium text-gray-900">Admin Settings</span>
+                <span className="font-medium text-gray-900">{t("common.adminSettings", "Admin Settings")}</span>
               </button>
 
               <button
@@ -126,7 +133,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors text-left"
               >
                 <LogOut className="h-5 w-5 text-red-600" />
-                <span className="font-medium text-red-600">Logout</span>
+                <span className="font-medium text-red-600">{t("common.logout", "Logout")}</span>
               </button>
             </div>
           </div>
