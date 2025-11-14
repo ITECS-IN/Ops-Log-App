@@ -33,6 +33,7 @@ async function bootstrap() {
       'https://ops-log.com',
       'https://www.ops-log.com',
       'http://localhost:3000', // keep for local dev
+      'http://192.168.1.6:3000',
     ],
     credentials: true,
   });

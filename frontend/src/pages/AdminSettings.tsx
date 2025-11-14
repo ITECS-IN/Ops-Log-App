@@ -1,10 +1,17 @@
 
+import { useEffect, useState, useRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-import { useEffect, useState, useRef } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 import { useCompany } from "@/context/useCompany";
@@ -20,6 +27,12 @@ export default function AdminSettings() {
   const [logoUploading, setLogoUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [cameraSupported, setCameraSupported] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraLoading, setCameraLoading] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [shiftTimings, setShiftTimings] = useState([
     { name: "A", start: "", end: "" },
     { name: "B", start: "", end: "" },
@@ -51,6 +64,68 @@ export default function AdminSettings() {
       setReportEmails(company.reportEmails || "");
     }
   }, [company]);
+
+  useEffect(() => {
+    setCameraSupported(
+      typeof navigator !== "undefined" &&
+        !!navigator.mediaDevices &&
+        typeof navigator.mediaDevices.getUserMedia === "function"
+    );
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    let stream: MediaStream | null = null;
+    const setupCamera = async () => {
+      if (!cameraOpen) return;
+      if (
+        typeof navigator === "undefined" ||
+        !navigator.mediaDevices?.getUserMedia
+      ) {
+        setCameraError("Camera is not supported in this browser.");
+        return;
+      }
+      setCameraLoading(true);
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+        });
+        if (!mounted) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play().catch(() => undefined);
+        }
+        setCameraError(null);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unable to access camera.";
+        setCameraError(message);
+      } finally {
+        setCameraLoading(false);
+      }
+    };
+    if (cameraOpen) {
+      setupCamera();
+    } else {
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    }
+    return () => {
+      mounted = false;
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      setCameraLoading(false);
+      setCameraError(null);
+    };
+  }, [cameraOpen]);
 
   const handleShiftChange = (idx: number, field: 'name' | 'start' | 'end', value: string) => {
     setShiftTimings(prev => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s));
@@ -119,6 +194,30 @@ export default function AdminSettings() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleCaptureFromCamera = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 640;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          const file = new File([blob], `company-logo-${Date.now()}.png`, {
+            type: "image/png",
+          });
+          uploadLogoFile(file);
+          setCameraOpen(false);
+        }
+      },
+      "image/png",
+      0.9
+    );
+  };
+
   return (
     <div className="py-4 md:py-8 mx-auto">
       <Card>
@@ -161,6 +260,18 @@ export default function AdminSettings() {
                 <div className="text-xs text-muted-foreground">
                   Drag & drop an image here, or click to select a file. Recommended: square PNG/JPG, max 1MB.
                 </div>
+                {cameraSupported && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setCameraOpen(true)}
+                    disabled={logoUploading || loading}
+                    className="w-fit"
+                  >
+                    Capture with Camera
+                  </Button>
+                )}
                 {logoUploading && <span className="text-xs text-primary">Uploading...</span>}
               </div>
             </div>
@@ -238,6 +349,53 @@ export default function AdminSettings() {
           </Button>
         </CardContent>
       </Card>
+      <Dialog open={cameraOpen} onOpenChange={setCameraOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Capture Company Logo</DialogTitle>
+            <DialogDescription>
+              Use your device camera to capture a new photo for the company logo.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="aspect-square w-full bg-black/80 rounded-lg flex items-center justify-center overflow-hidden">
+              {cameraError ? (
+                <p className="text-sm text-red-500 p-4 text-center">{cameraError}</p>
+              ) : (
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-contain"
+                />
+              )}
+            </div>
+            {cameraLoading && (
+              <p className="text-xs text-muted-foreground text-center">
+                Initializing camera...
+              </p>
+            )}
+            <canvas ref={canvasRef} className="hidden" />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCameraOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleCaptureFromCamera}
+              disabled={!!cameraError || cameraLoading || logoUploading}
+            >
+              Capture & Upload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
