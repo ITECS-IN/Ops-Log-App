@@ -19,7 +19,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  //app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
     .setTitle('Shift Log API')

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Factory,
@@ -17,9 +17,53 @@ import {
   X
 } from 'lucide-react';
 import { AppLogo } from '@/components/ui/AppLogo';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
+
+const CTA_CONFIG = {
+  trial: {
+    buttonLabel: 'Start a Free Trial',
+    modalTitle: 'Start Your Free Trial',
+    description: 'Tell us a bit about your factory so we can configure your 14-day pilot environment.',
+    ctaId: 'hero-start-free-trial'
+  },
+  subscription: {
+    buttonLabel: 'Request a Subscription',
+    modalTitle: 'Request a Subscription Plan',
+    description: 'Share your contact details and our team will send pricing plus onboarding steps.',
+    ctaId: 'hero-request-subscription'
+  }
+} as const;
+
+type LeadCtaKey = keyof typeof CTA_CONFIG;
+
+type LeadFormState = {
+  fullName: string;
+  email: string;
+  company: string;
+  phone: string;
+  notes: string;
+};
+
+const createEmptyLeadForm = (): LeadFormState => ({
+  fullName: '',
+  email: '',
+  company: '',
+  phone: '',
+  notes: ''
+});
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [leadModalOpen, setLeadModalOpen] = useState(false);
+  const [activeCta, setActiveCta] = useState<LeadCtaKey>('trial');
+  const [leadForm, setLeadForm] = useState<LeadFormState>(createEmptyLeadForm);
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
 
   useEffect(() => {
     // Set page title and meta description for SEO
@@ -32,6 +76,39 @@ export default function LandingPage() {
 
   // Close mobile menu when clicking on a link
   const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  const openLeadModal = (cta: LeadCtaKey) => {
+    setActiveCta(cta);
+    setLeadModalOpen(true);
+  };
+
+  const closeLeadModal = () => {
+    setLeadModalOpen(false);
+    setLeadForm(createEmptyLeadForm());
+    setIsSubmittingLead(false);
+  };
+
+  const handleLeadSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!leadForm.fullName.trim() || !leadForm.email.trim()) {
+      toast.error('Full name and work email are required.');
+      return;
+    }
+
+    setIsSubmittingLead(true);
+    try {
+      await api.post('/leads', {
+        ...leadForm,
+        source: 'landing-page',
+        cta: CTA_CONFIG[activeCta].ctaId
+      });
+      toast.success("Thanks for reaching out! We'll contact you shortly.");
+      closeLeadModal();
+    } catch {
+      // Axios interceptor will surface the exact error to the user.
+      setIsSubmittingLead(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -62,12 +139,13 @@ export default function LandingPage() {
               >
                 Sign In
               </Link>
-              <Link
-                to="/signup"
+              <button
+                type="button"
+                onClick={() => openLeadModal('trial')}
                 className="bg-brand-600 text-white px-3 py-2 lg:px-4 lg:py-2 rounded-lg hover:bg-brand-700 transition-colors font-medium text-sm lg:text-base"
               >
                 Get Started
-              </Link>
+              </button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -125,13 +203,16 @@ export default function LandingPage() {
                 >
                   Sign In
                 </Link>
-                <Link
-                  to="/signup"
-                  onClick={closeMobileMenu}
-                  className="block bg-brand-600 text-white px-4 py-3 rounded-lg hover:bg-brand-700 transition-colors font-medium text-center"
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeMobileMenu();
+                    openLeadModal('trial');
+                  }}
+                  className="block w-full bg-brand-600 text-white px-4 py-3 rounded-lg hover:bg-brand-700 transition-colors font-medium text-center"
                 >
                   Get Started
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -151,19 +232,21 @@ export default function LandingPage() {
               Make data-driven decisions with comprehensive analytics and instant visibility into production KPIs.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
-              <Link
-                to="/signup"
+              <button
+                type="button"
+                onClick={() => openLeadModal('trial')}
                 className="bg-brand-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg hover:bg-brand-700 transition-all transform hover:scale-105 font-semibold text-base sm:text-lg shadow-lg flex items-center justify-center gap-2 w-full sm:w-auto"
               >
-                Start a Free Trial
+                {CTA_CONFIG.trial.buttonLabel}
                 <ArrowRight className="h-5 w-5" />
-              </Link>
-              <a
-                href="#pricing"
+              </button>
+              <button
+                type="button"
+                onClick={() => openLeadModal('subscription')}
                 className="bg-white text-brand-600 border-2 border-brand-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg hover:bg-brand-50 transition-all font-semibold text-base sm:text-lg shadow-lg w-full sm:w-auto"
               >
-                Request a Subscription
-              </a>
+                {CTA_CONFIG.subscription.buttonLabel}
+              </button>
             </div>
             <p className="text-xs sm:text-sm text-gray-500 mt-3 sm:mt-4 px-4">
               No credit card required • 14-day free trial • Cancel anytime
@@ -557,19 +640,21 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-8 sm:mb-12 px-4 sm:px-0">
-            <Link
-              to="/signup"
+            <button
+              type="button"
+              onClick={() => openLeadModal('trial')}
               className="bg-white text-brand-600 px-8 sm:px-10 py-4 sm:py-5 rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 font-bold text-base sm:text-lg md:text-xl shadow-2xl flex items-center justify-center gap-2 w-full sm:w-auto"
             >
               Start a Free Trial
               <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
-            </Link>
-            <a
-              href="mailto:sales@shiftlog.com?subject=Subscription Request"
+            </button>
+            <button
+              type="button"
+              onClick={() => openLeadModal('subscription')}
               className="bg-brand-500 text-white border-2 border-white px-8 sm:px-10 py-4 sm:py-5 rounded-lg hover:bg-brand-400 transition-all font-bold text-base sm:text-lg md:text-xl shadow-2xl w-full sm:w-auto"
             >
               Request a Subscription
-            </a>
+            </button>
           </div>
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mt-12 sm:mt-16 text-left">
@@ -644,6 +729,95 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <Dialog open={leadModalOpen} onOpenChange={(open) => { if (!open) { closeLeadModal(); } }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold text-gray-900">
+              {CTA_CONFIG[activeCta].modalTitle}
+            </DialogTitle>
+            <DialogDescription className="text-base text-gray-600">
+              {CTA_CONFIG[activeCta].description}
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleLeadSubmit}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="lead-full-name">Full Name *</Label>
+                <Input
+                  id="lead-full-name"
+                  name="fullName"
+                  placeholder="Alex Rivera"
+                  value={leadForm.fullName}
+                  onChange={(event) => setLeadForm((prev) => ({ ...prev, fullName: event.target.value }))}
+                  disabled={isSubmittingLead}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="lead-email">Work Email *</Label>
+                <Input
+                  id="lead-email"
+                  type="email"
+                  name="email"
+                  placeholder="alex@manufacturer.com"
+                  value={leadForm.email}
+                  onChange={(event) => setLeadForm((prev) => ({ ...prev, email: event.target.value }))}
+                  disabled={isSubmittingLead}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="lead-company">Company</Label>
+                <Input
+                  id="lead-company"
+                  name="company"
+                  placeholder="Acme Manufacturing"
+                  value={leadForm.company}
+                  onChange={(event) => setLeadForm((prev) => ({ ...prev, company: event.target.value }))}
+                  disabled={isSubmittingLead}
+                />
+              </div>
+              <div>
+                <Label htmlFor="lead-phone">Phone</Label>
+                <Input
+                  id="lead-phone"
+                  type="tel"
+                  name="phone"
+                  placeholder="+1 (555) 123-4567"
+                  value={leadForm.phone}
+                  onChange={(event) => setLeadForm((prev) => ({ ...prev, phone: event.target.value }))}
+                  disabled={isSubmittingLead}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="lead-notes">What can we help with?</Label>
+              <Textarea
+                id="lead-notes"
+                name="notes"
+                placeholder="Share any context on production lines, shifts, or timelines."
+                value={leadForm.notes}
+                onChange={(event) => setLeadForm((prev) => ({ ...prev, notes: event.target.value }))}
+                disabled={isSubmittingLead}
+                rows={4}
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white"
+              disabled={isSubmittingLead}
+            >
+              {isSubmittingLead ? 'Sending...' : 'Submit Request'}
+            </Button>
+            <p className="text-xs text-gray-500 text-center">
+              We respond within one business day. By submitting, you agree to be contacted about Shift Log.
+            </p>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

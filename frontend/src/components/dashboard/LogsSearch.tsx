@@ -173,7 +173,9 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
                 <Select value={pendingFilters.lineId} onValueChange={v => handleFilter('lineId', v)}>
                   <SelectTrigger id="lineId" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder="All Lines" /></SelectTrigger>
                   <SelectContent>
-                    {lines.map(line => <SelectItem key={line._id} value={line._id}>{line.lineName}</SelectItem>)}
+                    {Array.isArray(lines) && lines.length > 0 && lines.map(line => (
+                      <SelectItem key={line._id} value={line._id}>{line.lineName}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -182,7 +184,7 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
                 <Select value={pendingFilters.machineId} onValueChange={v => handleFilter('machineId', v)}>
                   <SelectTrigger id="machineId" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder="All Machines" /></SelectTrigger>
                   <SelectContent>
-                    {machines
+                    {Array.isArray(machines) && machines.length > 0 && machines
                       .filter(m => {
                         // If no lineId filter, show all
                         if (!pendingFilters.lineId) return true;
@@ -263,11 +265,11 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
             </TableRow>
           </TableHeader>
           <TableBody>
-            {logs.length === 0 ? (
+            {(Array.isArray(logs) && logs.length === 0) ? (
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">No logs found.</TableCell>
               </TableRow>
-            ) : logs.map(log => (
+            ) : (Array.isArray(logs) ? logs : []).map(log => (
               <TableRow
                 key={log._id}
                 className="hover:bg-muted/50 transition-colors cursor-pointer"
