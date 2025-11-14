@@ -51,9 +51,9 @@ export default function Dashboard() {
   }, [fetchStats]);
 
   return (
-    <div className=" space-y-8">
-      <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6">Dashboard</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <StatCard title="Total Logs Today" value={stats.totalLogsToday} compact />
         <StatCard title="Total Downtime (Hours)" value={stats.totalDowntimeHours} compact />
         <StatCard title="Average MTTR (Min)" value={stats.avgMTTR} compact />
@@ -71,9 +71,9 @@ export default function Dashboard() {
         isEdit={!!editLog}
         editLog={editLog}
       />
-      <div className="mt-8">
+      <div className="mt-6 sm:mt-8">
         <Tabs value={tab} onValueChange={setTab} className="w-full">
-          <TabsList>
+          <TabsList className="w-full grid grid-cols-2 sm:flex">
             <TabsTrigger value="logs">View Log</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>

@@ -7,11 +7,13 @@ type AppLogoProps = {
 
 export function AppLogo({ size = 44, className = '' }: AppLogoProps) {
   return (
-    <img
-      src={applogo}
-      alt="Logo"
-      style={{ height: size, width: size, margin: 0, display: 'block' }}
-      className={`object-contain ${className}`}
-    />
+    <div className={className}>
+      <img
+        src={applogo}
+        alt="Logo"
+        style={{ height: size, width: size, margin: 0, display: 'block' }}
+        className="object-contain"
+      />
+    </div>
   );
 }

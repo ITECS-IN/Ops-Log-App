@@ -11,9 +11,9 @@ export default function AdminPage() {
   }, []);
   const [tab, setTab] = useState("lines");
   return (
-    <div className="mx-auto p-4">
+    <div className="mx-auto p-3 sm:p-4 md:p-6">
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList>
+        <TabsList className="w-full flex-wrap h-full">
           <TabsTrigger value="lines">Lines Management</TabsTrigger>
           <TabsTrigger value="machines">Machines Management</TabsTrigger>
           <TabsTrigger value="operators">Operators</TabsTrigger>

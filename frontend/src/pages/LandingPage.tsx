@@ -41,6 +41,7 @@ export default function LandingPage() {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
+              <AppLogo size={32} className="sm:block md:hidden" />
               <AppLogo size={40} className="hidden sm:block" />
               <span className="text-lg sm:text-2xl font-bold text-gray-900">Shift Log</span>
             </Link>
@@ -597,6 +598,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center space-x-2 mb-4">
+                <AppLogo size={32} className="sm:block md:hidden" />
                 <AppLogo size={40} className="hidden sm:block" />
                 <span className="text-base sm:text-xl font-bold text-white">Shift Log</span>
               </div>

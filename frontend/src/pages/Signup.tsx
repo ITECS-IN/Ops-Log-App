@@ -33,18 +33,21 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 px-4 sm:px-6">
       <form
         onSubmit={handleSignup}
-        className="bg-white/90 dark:bg-gray-900/90 p-8 rounded-xl shadow-xl w-full max-w-md space-y-5 border border-gray-100 dark:border-gray-800 animate-fade-in"
+        className="bg-white/90 dark:bg-gray-900/90 p-6 sm:p-8 md:p-10 rounded-xl shadow-xl w-full max-w-[90%] sm:max-w-md space-y-4 sm:space-y-5 border border-gray-100 dark:border-gray-800 animate-fade-in"
       >
-        <AppLogo size={64} className="mx-auto! mb-2!" />
-        <h2 className="text-3xl font-extrabold mb-2 text-center text-primary tracking-tight">Create your Shift Log account</h2>
-        <p className="text-center text-muted-foreground mb-2 text-sm">Sign up to get started</p>
-        <div className="space-y-3">
+        <div className="flex justify-center mb-2">
+          <AppLogo size={48} className="sm:hidden" />
+          <AppLogo size={64} className="hidden sm:block" />
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-center text-primary tracking-tight">Create your Shift Log account</h2>
+        <p className="text-center text-muted-foreground mb-2 text-xs sm:text-sm">Sign up to get started</p>
+        <div className="space-y-3 sm:space-y-4">
           <input
             type="email"
-            className="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white dark:bg-gray-800 transition"
+            className="border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 sm:py-3 w-full text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white dark:bg-gray-800 transition"
             placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
@@ -54,7 +57,7 @@ export default function Signup() {
           />
           <input
             type="password"
-            className="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white dark:bg-gray-800 transition"
+            className="border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 sm:py-3 w-full text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white dark:bg-gray-800 transition"
             placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
@@ -63,7 +66,7 @@ export default function Signup() {
           />
           <input
             type="text"
-            className="border border-gray-300 dark:border-gray-700 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white dark:bg-gray-800 transition"
+            className="border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 sm:py-3 w-full text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white dark:bg-gray-800 transition"
             placeholder="Company Name"
             value={companyName}
             onChange={e => setCompanyName(e.target.value)}
@@ -73,7 +76,7 @@ export default function Signup() {
         </div>
         <Button
           type="submit"
-          className="w-full mt-2"
+          className="w-full mt-2 py-2.5 sm:py-3 text-sm sm:text-base"
           disabled={loading}
         >
           {loading ? (
@@ -86,7 +89,7 @@ export default function Signup() {
         <Button
           type="button"
           variant="outline"
-          className="w-full"
+          className="w-full py-2.5 sm:py-3 text-sm sm:text-base"
           onClick={() => window.location.href = '/login'}
         >
           Already have an account? Login
