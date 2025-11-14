@@ -35,6 +35,19 @@ The backend now exposes a lightweight endpoint that landing-page CTA buttons can
 
 This endpoint is intentionally left outside the Firebase auth middleware so it can be safely invoked from the public marketing site.
 
+### Lead notification email setup
+
+To receive an email at `itechlicense@outlook.com` every time a landing-page lead is created, configure SMTP credentials via the following environment variables:
+
+| Variable | Description |
+| --- | --- |
+| `EMAIL_HOST`, `EMAIL_PORT` | SMTP server host and port (465 implies TLS). |
+| `EMAIL_USER`, `EMAIL_PASS` | Login credentials for the SMTP server. |
+| `EMAIL_FROM` | Display name/address for outgoing notifications, e.g. `"Shift Log" <no-reply@shiftlog.com>`. |
+| `LEAD_NOTIFICATION_TO` | Destination mailbox. Defaults to `itechlicense@outlook.com` if omitted. |
+
+If any of the SMTP variables are missing the backend will skip sending mail but continue storing leads.
+
 ## Project setup
 
 ```bash

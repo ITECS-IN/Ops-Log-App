@@ -3,11 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Lead } from './schemas/lead.schema';
 import { CreateLeadDto } from './dto/create-lead.dto';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class LeadsService {
   constructor(
     @InjectModel(Lead.name) private readonly leadModel: Model<Lead>,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(createLeadDto: CreateLeadDto): Promise<Lead> {
@@ -17,6 +19,7 @@ export class LeadsService {
       source: createLeadDto.source ?? 'landing-cta',
     });
     await lead.save();
+    await this.emailService.sendLeadNotification(lead);
     return lead;
   }
 }

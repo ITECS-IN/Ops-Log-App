@@ -3,10 +3,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { LeadsController } from './leads.controller';
 import { LeadsService } from './leads.service';
 import { Lead, LeadSchema } from './schemas/lead.schema';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Lead.name, schema: LeadSchema }]),
+    EmailModule,
   ],
   controllers: [LeadsController],
   providers: [LeadsService],
