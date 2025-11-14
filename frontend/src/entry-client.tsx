@@ -1,8 +1,7 @@
 import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
+import { hydrateRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
-// import App from './App';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -11,13 +10,12 @@ import AdminPage from './pages/AdminPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { Layout } from './components/layout/Layout';
 import { CompanyProvider } from "@/context/CompanyContext";
-// import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { LoginRedirectIfAuthenticated } from './components/auth/LoginRedirectIfAuthenticated';
 import { Toaster } from 'sonner';
 import NotFound from './pages/NotFound';
 
-
-createRoot(document.getElementById('root')!).render(
+hydrateRoot(
+  document.getElementById('root')!,
   <StrictMode>
     <Toaster position="top-right" richColors />
     <BrowserRouter>

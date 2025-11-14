@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { toast } from "sonner";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://ops-log.com/api", //"http://localhost:4000", // Set your backend URL here or in .env
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000", // Set your backend URL here or in .env
   timeout: 10000,
   withCredentials: true,
 });

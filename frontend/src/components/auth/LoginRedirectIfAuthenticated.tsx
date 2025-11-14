@@ -6,7 +6,7 @@ export function LoginRedirectIfAuthenticated({ children }: { children: ReactNode
     const auth = getAuth();
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
-        window.location.replace('/');
+        window.location.replace('/dashboard');
       }
     });
     return () => unsub();

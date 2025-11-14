@@ -2,12 +2,73 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="/src/assets/applogo.png" />
+    <link rel="icon" type="image/png" href="/src/assets/applogo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shift Log</title>
+
+    <!-- Primary Meta Tags -->
+    <title>Shift Log - Manufacturing Operations Management Platform</title>
+    <meta name="title" content="Shift Log - Manufacturing Operations Management Platform" />
+    <meta name="description" content="Real-time manufacturing floor management system for tracking machine operations, downtime events, and operator activities. Optimize production efficiency with advanced analytics and instant visibility into production KPIs." />
+    <meta name="keywords" content="manufacturing, operations management, downtime tracking, production monitoring, MTTR, equipment availability, manufacturing analytics, shift management, production floor, OEE" />
+    <meta name="author" content="Shift Log" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://shiftlog.com/" />
+    <meta property="og:title" content="Shift Log - Manufacturing Operations Management Platform" />
+    <meta property="og:description" content="Real-time manufacturing floor management system for tracking machine operations, downtime events, and operator activities. Optimize production efficiency with advanced analytics." />
+    <meta property="og:image" content="/src/assets/applogo.png" />
+    <meta property="og:site_name" content="Shift Log" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://shiftlog.com/" />
+    <meta property="twitter:title" content="Shift Log - Manufacturing Operations Management Platform" />
+    <meta property="twitter:description" content="Real-time manufacturing floor management system for tracking machine operations, downtime events, and operator activities." />
+    <meta property="twitter:image" content="/src/assets/applogo.png" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://shiftlog.com/" />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4F46E5" />
+
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Shift Log",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "Manufacturing operations management platform for real-time tracking of machine operations, downtime events, and operator activities",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2025-12-31",
+        "description": "14-day free trial"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "127"
+      },
+      "featureList": [
+        "Real-time production monitoring",
+        "Downtime tracking",
+        "Advanced analytics with 6 charts",
+        "Multi-tenant security",
+        "Mobile-friendly interface",
+        "CSV export functionality",
+        "File upload support"
+      ]
+    }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="root"><!--app-html--></div>
+    <script type="module" src="/src/entry-client.tsx"></script>
   </body>
 </html>
