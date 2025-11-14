@@ -49,7 +49,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <button
               type="button"
               aria-label="Go to Dashboard"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/dashboard")}
               className="focus:outline-none shrink-0"
               style={{ background: "none", border: "none", padding: 0, margin: 0, cursor: "pointer" }}
             >
@@ -59,13 +59,13 @@ export function Layout({ children }: { children: ReactNode }) {
             </button>
 
             {/* Title - Hidden on mobile, shown on tablet+ */}
-            <h1 className="hidden sm:block text-base md:text-lg lg:text-xl font-bold truncate">
+            <h1 className="block text-base md:text-lg lg:text-xl font-bold truncate">
               {title}
             </h1>
 
             {/* Company Badge - Hidden on mobile, shown on md+ */}
             {company?.companyName && !loading && (
-              <span className="hidden md:inline-flex text-primary font-semibold text-xs lg:text-sm tracking-wide bg-primary/10 rounded px-2 lg:px-3 py-1 shadow-sm border border-primary/30 truncate max-w-[200px] lg:max-w-none">
+              <span className="inline-flex text-primary font-semibold text-xs lg:text-sm tracking-wide bg-primary/10 rounded px-2 lg:px-3 py-1 shadow-sm border border-primary/30 truncate max-w-[200px] lg:max-w-none">
                 {company.companyName}
               </span>
             )}
@@ -112,16 +112,6 @@ export function Layout({ children }: { children: ReactNode }) {
         {mobileMenuOpen && (
           <div className="sm:hidden bg-white border-t border-gray-200">
             <div className="px-4 py-3 space-y-3">
-              {/* Mobile: Page Title */}
-              <div className="pb-2 border-b border-gray-200">
-                <h2 className="text-base font-bold text-gray-900">{title}</h2>
-                {company?.companyName && !loading && (
-                  <span className="inline-flex mt-2 text-primary font-semibold text-xs tracking-wide bg-primary/10 rounded px-2 py-1 shadow-sm border border-primary/30">
-                    {company.companyName}
-                  </span>
-                )}
-              </div>
-
               {/* Mobile: Menu Items */}
               <button
                 onClick={handleAdminClick}

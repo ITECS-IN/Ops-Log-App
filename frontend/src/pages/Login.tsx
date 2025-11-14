@@ -46,6 +46,17 @@ export default function Login() {
 
   return (
   <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 px-4 sm:px-6">
+              <p className="text-center text-muted-foreground mb-4 text-xs sm:text-sm">
+                <span>Back to </span>
+                <a
+                  href="/"
+                  className="text-primary underline font-medium hover:text-primary/80 transition-colors"
+                  aria-label="Go to Shift Log home"
+                >
+                  Shift Log Home
+                </a>
+              </p>
+
       <form
         onSubmit={handleLogin}
         className="bg-white/90 dark:bg-gray-900/90 p-6 sm:p-8 md:p-10 rounded-xl shadow-xl w-full max-w-[90%] sm:max-w-md space-y-4 sm:space-y-5 border border-gray-100 dark:border-gray-800 animate-fade-in"
