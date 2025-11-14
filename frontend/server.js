@@ -28,10 +28,10 @@ if (!isProduction) {
   app.use(base, sirv('./dist/client', { extensions: [] }));
 }
 
-// Serve HTML
-app.use('*', async (req, res) => {
+// SSR for landing page only
+app.get('/', async (req, res) => {
   try {
-    const url = req.originalUrl.replace(base, '');
+    const url = '/';
 
     let template;
     let render;
@@ -50,6 +50,26 @@ app.use('*', async (req, res) => {
     const html = template.replace(`<!--app-html-->`, rendered.html || '');
 
     res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
+  } catch (e) {
+    if (!isProduction) vite?.ssrFixStacktrace(e);
+    console.log(e.stack);
+    res.status(500).end(e.stack);
+  }
+});
+
+// Client-side only routes - serve index.html without SSR
+app.get('*', async (req, res) => {
+  try {
+    let template;
+    if (!isProduction) {
+      template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
+      template = await vite.transformIndexHtml(req.originalUrl, template);
+    } else {
+      template = fs.readFileSync(path.resolve(__dirname, 'dist/client/index.html'), 'utf-8');
+    }
+
+    // Send template without SSR (client will handle routing)
+    res.status(200).set({ 'Content-Type': 'text/html' }).send(template);
   } catch (e) {
     if (!isProduction) vite?.ssrFixStacktrace(e);
     console.log(e.stack);

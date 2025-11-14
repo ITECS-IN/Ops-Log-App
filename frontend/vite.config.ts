@@ -23,6 +23,6 @@ export default defineConfig({
     },
   },
   ssr: {
-    noExternal: ['react', 'react-dom', 'react-router-dom'],
+    noExternal: ['react', 'react-dom', 'react-router', 'react-router-dom'],
   },
 });

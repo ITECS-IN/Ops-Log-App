@@ -24,7 +24,7 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginRedirectIfAuthenticated><Login /></LoginRedirectIfAuthenticated>} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/signup" element={<LoginRedirectIfAuthenticated><Signup /></LoginRedirectIfAuthenticated>} />
         <Route path="/dashboard" element={<ProtectedRoute><CompanyProvider><Layout><Dashboard /></Layout></CompanyProvider></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><CompanyProvider><Layout><AdminPage /></Layout></CompanyProvider></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
