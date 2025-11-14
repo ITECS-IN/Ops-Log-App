@@ -5,14 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import api from '../lib/axios';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCompany } from '@/context/useCompany';
 
 export interface Operator {
   _id?: string;
   name: string;
   employeeCode?: string;
-  shift: string;
   role?: string;
   pinCode: string;
 }
@@ -21,9 +18,8 @@ const ManageOperators: React.FC = () => {
   useEffect(() => {
     document.title = "Manage Operators | Shift Log";
   }, []);
-  
+
   const [operators, setOperators] = useState<Operator[]>([]);
-  const { company } = useCompany();
   const [addOpen, setAddOpen] = useState(false);
   const [editOperator, setEditOperator] = useState<Operator | null>(null);
   const [form, setForm] = useState<Partial<Operator>>({});
@@ -84,7 +80,6 @@ const ManageOperators: React.FC = () => {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Employee Code</TableHead>
-                  <TableHead>Shift</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Pin Code</TableHead>
                   <TableHead>Actions</TableHead>
@@ -95,7 +90,6 @@ const ManageOperators: React.FC = () => {
                   <TableRow key={op._id}>
                     <TableCell className="font-medium">{op.name}</TableCell>
                     <TableCell>{op.employeeCode}</TableCell>
-                    <TableCell>{op.shift}</TableCell>
                     <TableCell>{op.role}</TableCell>
                     <TableCell>{op.pinCode}</TableCell>
                     <TableCell>
@@ -118,22 +112,6 @@ const ManageOperators: React.FC = () => {
           <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
             <Input name="name" placeholder="Name" value={form.name || ''} onChange={handleChange} required />
             <Input name="employeeCode" placeholder="Employee Code" value={form.employeeCode || ''} onChange={handleChange} />
-            <div>
-              <Select value={form.shift || ''} onValueChange={v => setForm(f => ({ ...f, shift: v }))}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select shift" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.isArray(company?.shiftTimings)
-                    ? (company.shiftTimings as { name: string; start?: string; end?: string }[]).map((shift, idx) => (
-                        <SelectItem key={shift.name || idx} value={shift.name} className="text-sm">
-                          {shift.name} {shift.start && shift.end ? `(${shift.start} - ${shift.end})` : ""}
-                        </SelectItem>
-                      ))
-                    : [<SelectItem key="A" value="A">A</SelectItem>, <SelectItem key="B" value="B">B</SelectItem>, <SelectItem key="C" value="C">C</SelectItem>]}
-                </SelectContent>
-              </Select>
-            </div>
             <Input name="role" placeholder="Role" value={form.role || ''} onChange={handleChange} />
             <Input name="pinCode" placeholder="Pin Code" value={form.pinCode || ''} onChange={handleChange} required />
             <Button size="sm" type="submit">Add</Button>
@@ -149,22 +127,6 @@ const ManageOperators: React.FC = () => {
           <form className="flex flex-col gap-2" onSubmit={handleUpdate}>
             <Input name="name" placeholder="Name" value={form.name || ''} onChange={handleChange} required />
             <Input name="employeeCode" placeholder="Employee Code" value={form.employeeCode || ''} onChange={handleChange} />
-            <div>
-              <Select value={form.shift || ''} onValueChange={v => setForm(f => ({ ...f, shift: v }))}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select shift" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.isArray(company?.shiftTimings)
-                    ? (company.shiftTimings as { name: string; start?: string; end?: string }[]).map((shift, idx) => (
-                        <SelectItem key={shift.name || idx} value={shift.name} className="text-sm">
-                          {shift.name} {shift.start && shift.end ? `(${shift.start} - ${shift.end})` : ""}
-                        </SelectItem>
-                      ))
-                    : [<SelectItem key="A" value="A">A</SelectItem>, <SelectItem key="B" value="B">B</SelectItem>, <SelectItem key="C" value="C">C</SelectItem>]}
-                </SelectContent>
-              </Select>
-            </div>
             <Input name="role" placeholder="Role" value={form.role || ''} onChange={handleChange} />
             <Input name="pinCode" placeholder="Pin Code" value={form.pinCode || ''} onChange={handleChange} required />
             <Button size="sm" type="submit">Update</Button>
