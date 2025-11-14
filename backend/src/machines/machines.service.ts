@@ -58,8 +58,10 @@ export class MachinesService {
     const newMachineName = updateDto.machineName ?? machine.machineName;
     const newLineId = updateDto.lineId ?? machine.lineId;
     if (
-      (updateDto.machineName && updateDto.machineName !== machine.machineName) ||
-      (updateDto.lineId && updateDto.lineId.toString() !== machine.lineId.toString())
+      (updateDto.machineName &&
+        updateDto.machineName !== machine.machineName) ||
+      (updateDto.lineId &&
+        updateDto.lineId.toString() !== machine.lineId.toString())
     ) {
       const existing = await this.machineModel.findOne({
         machineName: newMachineName,

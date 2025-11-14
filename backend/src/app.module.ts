@@ -14,6 +14,7 @@ import { FirebaseAuthMiddleware } from './auth/firebase-auth.middleware';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ConfigModule } from '@nestjs/config';
 import { UploadModule } from './upload/upload.module';
+import { LeadsModule } from './leads/leads.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UploadModule } from './upload/upload.module';
     AuthModule,
     AnalyticsModule,
     UploadModule,
+    LeadsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

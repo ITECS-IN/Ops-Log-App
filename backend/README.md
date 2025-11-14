@@ -25,6 +25,16 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+### Landing CTA lead capture API
+
+The backend now exposes a lightweight endpoint that landing-page CTA buttons can call to collect interested users:
+
+- `POST /leads` accepts `fullName`, `email`, and optional `company`, `phone`, `notes`, `source`, and `cta` strings.
+- The body is validated (emails, phone numbers, string length) and persisted to MongoDB with automatic timestamps.
+- Successful requests return a short acknowledgement plus the newly created `leadId` that can be used for internal tracking.
+
+This endpoint is intentionally left outside the Firebase auth middleware so it can be safely invoked from the public marketing site.
+
 ## Project setup
 
 ```bash
