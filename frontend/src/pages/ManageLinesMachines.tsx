@@ -8,12 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLinesMachines } from "@/hooks/useLinesMachines";
 import api from "@/lib/axios";
 import { toast } from "sonner";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ManageLinesMachines({ section }: { section?: 'lines' | 'machines' }) {
   useEffect(() => {
     document.title = "Manage Lines & Machines | Shift Log";
   }, []);
   const { lines, machines, error, refetch } = useLinesMachines();
+  const { t } = useLanguage();
   // Add state for add modals
   const [addLineOpen, setAddLineOpen] = useState(false);
   const [addMachineOpen, setAddMachineOpen] = useState(false);
@@ -34,7 +36,7 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
       setLineActive(true);
       setAddLineOpen(false);
       refetch();
-      toast.success("Line added successfully");
+      toast.success(t('admin.lines.toast.added', 'Line added successfully'));
   };
 
   const handleAddMachine = async () => {
@@ -53,7 +55,7 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
       setSelectedLine("");
       setAddMachineOpen(false);
       refetch();
-      toast.success("Machine added successfully");
+      toast.success(t('admin.machines.toast.added', 'Machine added successfully'));
   };
 
 
@@ -74,7 +76,7 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
   const handleDeleteLine = async (id: string) => {
       await api.delete(`/lines/${id}`);
       refetch();
-      toast.success("Line deleted successfully");
+      toast.success(t('admin.lines.toast.deleted', 'Line deleted successfully'));
   };
   const handleEditLine = (line: LineType) => {
     setEditLine(line);
@@ -91,13 +93,13 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
       });
       setEditLine(null);
       refetch();
-      toast.success("Line updated successfully");
+      toast.success(t('admin.lines.toast.updated', 'Line updated successfully'));
   };
 
   const handleDeleteMachine = async (id: string) => {
       await api.delete(`/machines/${id}`);
       refetch();
-      toast.success("Machine deleted successfully");
+      toast.success(t('admin.machines.toast.deleted', 'Machine deleted successfully'));
   };
 
   const handleEditMachine = (machine: MachineType) => {
@@ -119,13 +121,20 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
       });
       setEditMachine(null);
       refetch();
-      toast.success("Machine updated successfully");
+      toast.success(t('admin.machines.toast.updated', 'Machine updated successfully'));
   };
+
+  const sectionTitle =
+    section === 'lines'
+      ? t('admin.lines.section.lines', 'Manage Lines')
+      : section === 'machines'
+        ? t('admin.lines.section.machines', 'Manage Machines')
+        : t('admin.lines.section.all', 'Manage Lines & Machines');
 
   return (
     <div className="py-4 md:py-8 space-y-8  mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">
-        {section === 'lines' ? 'Manage Lines' : section === 'machines' ? 'Manage Machines' : 'Manage Lines & Machines'}
+        {sectionTitle}
       </h2>
       {error && <div className="text-red-500">{error}</div>}
       <div className="flex flex-col gap-8">
@@ -134,18 +143,18 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
             {/* Lines CRUD */}
             <Card>
               <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">Lines</CardTitle>
-                <Button size="sm" onClick={() => setAddLineOpen(true)}>Add Line</Button>
+                <CardTitle className="text-lg">{t('admin.lines.cardTitle', 'Lines')}</CardTitle>
+                <Button size="sm" onClick={() => setAddLineOpen(true)}>{t('admin.lines.addButton', 'Add Line')}</Button>
               </CardHeader>
               <CardContent>
                 <div className="rounded-lg border bg-muted/50 overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Active</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead>{t('common.name', 'Name')}</TableHead>
+                        <TableHead>{t('common.description', 'Description')}</TableHead>
+                        <TableHead>{t('common.active', 'Active')}</TableHead>
+                        <TableHead>{t('common.actions', 'Actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -153,10 +162,12 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
                         <TableRow key={line._id}>
                           <TableCell className="font-medium">{line.lineName}</TableCell>
                           <TableCell>{line.description}</TableCell>
-                          <TableCell>{line.isActive ? 'Yes' : 'No'}</TableCell>
+                          <TableCell>{line.isActive ? t('common.yes', 'Yes') : t('common.no', 'No')}</TableCell>
                           <TableCell>
-                            <Button size="sm" variant="outline" onClick={() => handleEditLine(line)}>Edit</Button>
-                            <Button size="sm" variant="destructive" onClick={() => handleDeleteLine(line._id)} className="ml-2">Delete</Button>
+                            <Button size="sm" variant="outline" onClick={() => handleEditLine(line)}>{t('common.edit', 'Edit')}</Button>
+                            <Button size="sm" variant="destructive" onClick={() => handleDeleteLine(line._id)} className="ml-2">
+                              {t('common.delete', 'Delete')}
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -169,15 +180,15 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
             <Dialog open={addLineOpen} onOpenChange={setAddLineOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add Line</DialogTitle>
+                  <DialogTitle>{t('admin.lines.dialog.addTitle', 'Add Line')}</DialogTitle>
                 </DialogHeader>
                 <form className="flex flex-col gap-2" onSubmit={e => { e.preventDefault(); handleAddLine(); }}>
-                  <Input value={lineName} onChange={e => setLineName(e.target.value)} placeholder="Line name" />
-                  <Input value={lineDescription} onChange={e => setLineDescription(e.target.value)} placeholder="Description (optional)" />
+                  <Input value={lineName} onChange={e => setLineName(e.target.value)} placeholder={t('admin.lines.dialog.namePlaceholder', 'Line name')} />
+                  <Input value={lineDescription} onChange={e => setLineDescription(e.target.value)} placeholder={t('admin.lines.dialog.descriptionPlaceholder', 'Description (optional)')} />
                   <label className="flex items-center gap-1 text-xs">
-                    <input type="checkbox" checked={lineActive} onChange={e => setLineActive(e.target.checked)} /> Active
+                    <input type="checkbox" checked={lineActive} onChange={e => setLineActive(e.target.checked)} /> {t('admin.lines.dialog.activeLabel', 'Active')}
                   </label>
-                  <Button size="sm" type="submit">Add</Button>
+                  <Button size="sm" type="submit">{t('common.add', 'Add')}</Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -185,15 +196,15 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
             <Dialog open={!!editLine} onOpenChange={open => !open && setEditLine(null)}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Edit Line</DialogTitle>
+                  <DialogTitle>{t('admin.lines.dialog.editTitle', 'Edit Line')}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-2">
-                  <Input value={editLineName} onChange={e => setEditLineName(e.target.value)} placeholder="Line name" />
-                  <Input value={editLineDescription} onChange={e => setEditLineDescription(e.target.value)} placeholder="Description (optional)" />
+                  <Input value={editLineName} onChange={e => setEditLineName(e.target.value)} placeholder={t('admin.lines.dialog.namePlaceholder', 'Line name')} />
+                  <Input value={editLineDescription} onChange={e => setEditLineDescription(e.target.value)} placeholder={t('admin.lines.dialog.descriptionPlaceholder', 'Description (optional)')} />
                   <label className="flex items-center gap-1 text-xs">
-                    <input type="checkbox" checked={editLineActive} onChange={e => setEditLineActive(e.target.checked)} /> Active
+                    <input type="checkbox" checked={editLineActive} onChange={e => setEditLineActive(e.target.checked)} /> {t('admin.lines.dialog.activeLabel', 'Active')}
                   </label>
-                  <Button size="sm" onClick={handleUpdateLine}>Update</Button>
+                  <Button size="sm" onClick={handleUpdateLine}>{t('common.update', 'Update')}</Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -204,20 +215,20 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
             {/* Machines CRUD */}
             <Card>
               <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">Machines</CardTitle>
-                <Button size="sm" onClick={() => setAddMachineOpen(true)}>Add Machine</Button>
+                <CardTitle className="text-lg">{t('admin.machines.cardTitle', 'Machines')}</CardTitle>
+                <Button size="sm" onClick={() => setAddMachineOpen(true)}>{t('admin.machines.addButton', 'Add Machine')}</Button>
               </CardHeader>
               <CardContent>
                 <div className="rounded-lg border bg-muted/50 overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Line</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Active</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead>{t('common.name', 'Name')}</TableHead>
+                        <TableHead>{t('common.line', 'Line')}</TableHead>
+                        <TableHead>{t('common.status', 'Status')}</TableHead>
+                        <TableHead>{t('common.location', 'Location')}</TableHead>
+                        <TableHead>{t('common.active', 'Active')}</TableHead>
+                        <TableHead>{t('common.actions', 'Actions')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -227,10 +238,12 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
                           <TableCell>{typeof machine.lineId === 'object' && machine.lineId !== null ? machine.lineId.lineName : machine.lineId}</TableCell>
                           <TableCell>{machine.status}</TableCell>
                           <TableCell>{machine.location}</TableCell>
-                          <TableCell>{machine.isActive ? 'Yes' : 'No'}</TableCell>
+                          <TableCell>{machine.isActive ? t('common.yes', 'Yes') : t('common.no', 'No')}</TableCell>
                           <TableCell>
-                            <Button size="sm" variant="outline" onClick={() => handleEditMachine(machine)}>Edit</Button>
-                            <Button size="sm" variant="destructive" onClick={() => handleDeleteMachine(machine._id)} className="ml-2">Delete</Button>
+                            <Button size="sm" variant="outline" onClick={() => handleEditMachine(machine)}>{t('common.edit', 'Edit')}</Button>
+                            <Button size="sm" variant="destructive" onClick={() => handleDeleteMachine(machine._id)} className="ml-2">
+                              {t('common.delete', 'Delete')}
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -243,13 +256,13 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
             <Dialog open={addMachineOpen} onOpenChange={setAddMachineOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add Machine</DialogTitle>
+                  <DialogTitle>{t('admin.machines.dialog.addTitle', 'Add Machine')}</DialogTitle>
                 </DialogHeader>
                 <form className="flex flex-col gap-2" onSubmit={e => { e.preventDefault(); handleAddMachine(); }}>
-                  <Input value={machineName} onChange={e => setMachineName(e.target.value)} placeholder="Machine name" />
+                  <Input value={machineName} onChange={e => setMachineName(e.target.value)} placeholder={t('admin.machines.dialog.namePlaceholder', 'Machine name')} />
                   <Select value={selectedLine} onValueChange={setSelectedLine}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select line" />
+                      <SelectValue placeholder={t('admin.machines.selectLine', 'Select line')} />
                     </SelectTrigger>
                     <SelectContent>
                       {Array.isArray(lines) && lines.map(line => (
@@ -257,12 +270,12 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
                       ))}
                     </SelectContent>
                   </Select>
-                  <Input value={machineStatus} onChange={e => setMachineStatus(e.target.value)} placeholder="Status (optional)" />
-                  <Input value={machineLocation} onChange={e => setMachineLocation(e.target.value)} placeholder="Location (optional)" />
+                  <Input value={machineStatus} onChange={e => setMachineStatus(e.target.value)} placeholder={t('admin.machines.dialog.statusPlaceholder', 'Status (optional)')} />
+                  <Input value={machineLocation} onChange={e => setMachineLocation(e.target.value)} placeholder={t('admin.machines.dialog.locationPlaceholder', 'Location (optional)')} />
                   <label className="flex items-center gap-1 text-xs">
-                    <input type="checkbox" checked={machineActive} onChange={e => setMachineActive(e.target.checked)} /> Active
+                    <input type="checkbox" checked={machineActive} onChange={e => setMachineActive(e.target.checked)} /> {t('admin.machines.dialog.activeLabel', 'Active')}
                   </label>
-                  <Button size="sm" type="submit">Add</Button>
+                  <Button size="sm" type="submit">{t('common.add', 'Add')}</Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -270,13 +283,13 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
             <Dialog open={!!editMachine} onOpenChange={open => !open && setEditMachine(null)}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Edit Machine</DialogTitle>
+                  <DialogTitle>{t('admin.machines.dialog.editTitle', 'Edit Machine')}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-2">
-                  <Input value={editMachineName} onChange={e => setEditMachineName(e.target.value)} placeholder="Machine name" />
+                  <Input value={editMachineName} onChange={e => setEditMachineName(e.target.value)} placeholder={t('admin.machines.dialog.namePlaceholder', 'Machine name')} />
                   <Select value={editMachineLine} onValueChange={setEditMachineLine}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select line" />
+                      <SelectValue placeholder={t('admin.machines.selectLine', 'Select line')} />
                     </SelectTrigger>
                     <SelectContent>
                       {Array.isArray(lines) && lines.map(line => (
@@ -284,12 +297,12 @@ export default function ManageLinesMachines({ section }: { section?: 'lines' | '
                       ))}
                     </SelectContent>
                   </Select>
-                  <Input value={editMachineStatus} onChange={e => setEditMachineStatus(e.target.value)} placeholder="Status (optional)" />
-                  <Input value={editMachineLocation} onChange={e => setEditMachineLocation(e.target.value)} placeholder="Location (optional)" />
+                  <Input value={editMachineStatus} onChange={e => setEditMachineStatus(e.target.value)} placeholder={t('admin.machines.dialog.statusPlaceholder', 'Status (optional)')} />
+                  <Input value={editMachineLocation} onChange={e => setEditMachineLocation(e.target.value)} placeholder={t('admin.machines.dialog.locationPlaceholder', 'Location (optional)')} />
                   <label className="flex items-center gap-1 text-xs">
-                    <input type="checkbox" checked={editMachineActive} onChange={e => setEditMachineActive(e.target.checked)} /> Active
+                    <input type="checkbox" checked={editMachineActive} onChange={e => setEditMachineActive(e.target.checked)} /> {t('admin.machines.dialog.activeLabel', 'Active')}
                   </label>
-                  <Button size="sm" onClick={handleUpdateMachine}>Update</Button>
+                  <Button size="sm" onClick={handleUpdateMachine}>{t('common.update', 'Update')}</Button>
                 </div>
               </DialogContent>
             </Dialog>

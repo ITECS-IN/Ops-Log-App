@@ -147,7 +147,7 @@ export default function AdminSettings() {
         reportEmails,
         companyLogoUrl,
       });
-      toast.success("Settings saved");
+      toast.success(t('admin.settings.toast.saved', 'Settings saved'));
       refresh();
     } finally {
       setLoading(false);
@@ -164,7 +164,7 @@ export default function AdminSettings() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setCompanyLogoUrl(res.data.url);
-      toast.success("Logo uploaded");
+      toast.success(t('admin.settings.toast.logoUploaded', 'Logo uploaded'));
     } finally {
       setLogoUploading(false);
     }

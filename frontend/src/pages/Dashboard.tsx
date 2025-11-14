@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import firebaseApp from "@/lib/firebase";
 import AnalyticsTab from "@/components/dashboard/AnalyticsTab";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Dashboard() {
   useEffect(() => {
@@ -26,6 +27,7 @@ export default function Dashboard() {
     availability: 0,
   });
   const [logsRefreshKey, setLogsRefreshKey] = useState(0);
+  const { t } = useLanguage();
   const fetchStats = useCallback(() => {
     api.get("/dashboard/stats").then(res => {
       setStats(res.data);
@@ -52,12 +54,12 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-6 md:space-y-8">
-      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6">Dashboard</h2>
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6">{t('dashboard.title', 'Dashboard')}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard title="Total Logs Today" value={stats.totalLogsToday} compact />
-        <StatCard title="Total Downtime (Hours)" value={stats.totalDowntimeHours} compact />
-        <StatCard title="Average MTTR (Min)" value={stats.avgMTTR} compact />
-        <StatCard title="Availability (%)" value={stats.availability} compact />
+        <StatCard title={t('dashboard.stat.totalLogs', 'Total Logs Today')} value={stats.totalLogsToday} compact />
+        <StatCard title={t('dashboard.stat.totalDowntime', 'Total Downtime (Hours)')} value={stats.totalDowntimeHours} compact />
+        <StatCard title={t('dashboard.stat.avgMttr', 'Average MTTR (Min)')} value={stats.avgMTTR} compact />
+        <StatCard title={t('dashboard.stat.availability', 'Availability (%)')} value={stats.availability} compact />
       </div>
       <AddLogModal
         lines={lines}
@@ -74,8 +76,8 @@ export default function Dashboard() {
       <div className="mt-6 sm:mt-8">
         <Tabs value={tab} onValueChange={setTab} className="w-full">
           <TabsList className="w-full grid grid-cols-2 sm:flex">
-            <TabsTrigger value="logs">View Log</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="logs">{t('dashboard.tabs.logs', 'View Log')}</TabsTrigger>
+            <TabsTrigger value="analytics">{t('dashboard.tabs.analytics', 'Analytics')}</TabsTrigger>
           </TabsList>
           <TabsContent value="logs">
             <LogsSearch

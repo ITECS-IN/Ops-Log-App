@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import api from '../lib/axios';
+import { useLanguage } from "@/context/LanguageContext";
 
 export interface Operator {
   _id?: string;
@@ -23,6 +24,7 @@ const ManageOperators: React.FC = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [editOperator, setEditOperator] = useState<Operator | null>(null);
   const [form, setForm] = useState<Partial<Operator>>({});
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchOperators();
@@ -53,7 +55,7 @@ const ManageOperators: React.FC = () => {
   const handleUpdate = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!editOperator?._id) return;
-  const { _id, companyId, createdAt, updatedAt, __v, ...updatePayload } = form;
+  const { _id, ...updatePayload } = form;
   await api.put(`/operators/${editOperator._id}`, updatePayload);
   setEditOperator(null);
   setForm({});
@@ -67,22 +69,22 @@ const ManageOperators: React.FC = () => {
 
   return (
     <div className="py-4 md:py-8 space-y-8 mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-center">Manage Operators</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">{t('admin.operators.pageTitle', 'Manage Operators')}</h2>
       <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">Operators</CardTitle>
-          <Button size="sm" onClick={() => setAddOpen(true)}>Add Operator</Button>
+          <CardTitle className="text-lg">{t('admin.operators.cardTitle', 'Operators')}</CardTitle>
+          <Button size="sm" onClick={() => setAddOpen(true)}>{t('admin.operators.addButton', 'Add Operator')}</Button>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border bg-muted/50 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Employee Code</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Pin Code</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t('common.name', 'Name')}</TableHead>
+                  <TableHead>{t('admin.operators.table.employeeCode', 'Employee Code')}</TableHead>
+                  <TableHead>{t('admin.operators.table.role', 'Role')}</TableHead>
+                  <TableHead>{t('admin.operators.table.pinCode', 'Pin Code')}</TableHead>
+                  <TableHead>{t('common.actions', 'Actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -93,8 +95,10 @@ const ManageOperators: React.FC = () => {
                     <TableCell>{op.role}</TableCell>
                     <TableCell>{op.pinCode}</TableCell>
                     <TableCell>
-                      <Button size="sm" variant="outline" onClick={() => handleEdit(op)}>Edit</Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleDelete(op._id!)} className="ml-2">Delete</Button>
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(op)}>{t('common.edit', 'Edit')}</Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDelete(op._id!)} className="ml-2">
+                        {t('common.delete', 'Delete')}
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -107,14 +111,14 @@ const ManageOperators: React.FC = () => {
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Operator</DialogTitle>
+            <DialogTitle>{t('admin.operators.dialog.addTitle', 'Add Operator')}</DialogTitle>
           </DialogHeader>
           <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
-            <Input name="name" placeholder="Name" value={form.name || ''} onChange={handleChange} required />
-            <Input name="employeeCode" placeholder="Employee Code" value={form.employeeCode || ''} onChange={handleChange} />
-            <Input name="role" placeholder="Role" value={form.role || ''} onChange={handleChange} />
-            <Input name="pinCode" placeholder="Pin Code" value={form.pinCode || ''} onChange={handleChange} required />
-            <Button size="sm" type="submit">Add</Button>
+            <Input name="name" placeholder={t('admin.operators.placeholder.name', 'Name')} value={form.name || ''} onChange={handleChange} required />
+            <Input name="employeeCode" placeholder={t('admin.operators.placeholder.employeeCode', 'Employee Code')} value={form.employeeCode || ''} onChange={handleChange} />
+            <Input name="role" placeholder={t('admin.operators.placeholder.role', 'Role')} value={form.role || ''} onChange={handleChange} />
+            <Input name="pinCode" placeholder={t('admin.operators.placeholder.pinCode', 'Pin Code')} value={form.pinCode || ''} onChange={handleChange} required />
+            <Button size="sm" type="submit">{t('common.add', 'Add')}</Button>
           </form>
         </DialogContent>
       </Dialog>
@@ -122,14 +126,14 @@ const ManageOperators: React.FC = () => {
       <Dialog open={!!editOperator} onOpenChange={open => !open && setEditOperator(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Operator</DialogTitle>
+            <DialogTitle>{t('admin.operators.dialog.editTitle', 'Edit Operator')}</DialogTitle>
           </DialogHeader>
           <form className="flex flex-col gap-2" onSubmit={handleUpdate}>
-            <Input name="name" placeholder="Name" value={form.name || ''} onChange={handleChange} required />
-            <Input name="employeeCode" placeholder="Employee Code" value={form.employeeCode || ''} onChange={handleChange} />
-            <Input name="role" placeholder="Role" value={form.role || ''} onChange={handleChange} />
-            <Input name="pinCode" placeholder="Pin Code" value={form.pinCode || ''} onChange={handleChange} required />
-            <Button size="sm" type="submit">Update</Button>
+            <Input name="name" placeholder={t('admin.operators.placeholder.name', 'Name')} value={form.name || ''} onChange={handleChange} required />
+            <Input name="employeeCode" placeholder={t('admin.operators.placeholder.employeeCode', 'Employee Code')} value={form.employeeCode || ''} onChange={handleChange} />
+            <Input name="role" placeholder={t('admin.operators.placeholder.role', 'Role')} value={form.role || ''} onChange={handleChange} />
+            <Input name="pinCode" placeholder={t('admin.operators.placeholder.pinCode', 'Pin Code')} value={form.pinCode || ''} onChange={handleChange} required />
+            <Button size="sm" type="submit">{t('common.update', 'Update')}</Button>
           </form>
         </DialogContent>
       </Dialog>

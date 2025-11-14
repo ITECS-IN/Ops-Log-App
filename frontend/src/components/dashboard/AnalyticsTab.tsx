@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 import { Bar, Pie, Line } from 'react-chartjs-2';
+import { useLanguage } from "@/context/LanguageContext";
 
 type MachineAgg = { _id: string; label: string; value: number };
 type SeverityAgg = { _id: string | number; label?: string; value?: number; count?: number };
@@ -35,6 +36,7 @@ ChartJS.register(
 );
 
 export default function AnalyticsTab() {
+  const { t } = useLanguage();
   const [logsPerMachine, setLogsPerMachine] = useState<MachineAgg[]>([]);
   const [downtimePerMachine, setDowntimePerMachine] = useState<MachineAgg[]>([]);
   const [severityDist, setSeverityDist] = useState<SeverityAgg[]>([]);
@@ -60,25 +62,25 @@ export default function AnalyticsTab() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
-      <div className="h-48"><h3 className="font-semibold mb-2">Logs per Machine</h3>
+      <div className="h-48"><h3 className="font-semibold mb-2">{t('landing.analytics.card.logsTitle', 'Logs per Machine')}</h3>
         <Bar
           data={{
             labels: logsPerMachine.map((d) => d.label || d._id),
-            datasets: [{ label: 'Logs', data: logsPerMachine.map((d) => d.value), backgroundColor: '#6366f1' }],
+            datasets: [{ label: t('analytics.datasets.logs', 'Logs'), data: logsPerMachine.map((d) => d.value), backgroundColor: '#6366f1' }],
           }}
           options={chartOptions}
         />
       </div>
-      <div className="h-48"><h3 className="font-semibold mb-2">Downtime per Machine</h3>
+      <div className="h-48"><h3 className="font-semibold mb-2">{t('landing.analytics.card.downtimeMachineTitle', 'Downtime per Machine')}</h3>
         <Bar
           data={{
             labels: downtimePerMachine.map((d) => d.label || d._id),
-            datasets: [{ label: 'Downtime (min)', data: downtimePerMachine.map((d) => d.value), backgroundColor: '#f59e42' }],
+            datasets: [{ label: t('analytics.datasets.downtimeMinutes', 'Downtime (min)'), data: downtimePerMachine.map((d) => d.value), backgroundColor: '#f59e42' }],
           }}
           options={chartOptions}
         />
       </div>
-      <div className="h-48"><h3 className="font-semibold mb-2">Severity Distribution</h3>
+      <div className="h-48"><h3 className="font-semibold mb-2">{t('landing.analytics.card.severityTitle', 'Severity Distribution')}</h3>
         <Pie
           data={{
             labels: severityDist.length > 0 ? severityDist.map((d) => d.label || d._id.toString()) : ["No Data"],
@@ -92,29 +94,29 @@ export default function AnalyticsTab() {
           options={chartOptions}
         />
       </div>
-      <div className="h-48"><h3 className="font-semibold mb-2">Downtime Trend</h3>
+      <div className="h-48"><h3 className="font-semibold mb-2">{t('landing.analytics.card.downtimeTrendTitle', 'Downtime Trend')}</h3>
         <Line
           data={{
             labels: downtimeTrend.map((d) => d.label || d._id),
-            datasets: [{ label: 'Total Downtime', data: downtimeTrend.map((d) => d.value ?? d.totalDowntime ?? 0), borderColor: '#6366f1', backgroundColor: '#c7d2fe' }],
+            datasets: [{ label: t('analytics.datasets.totalDowntime', 'Total Downtime'), data: downtimeTrend.map((d) => d.value ?? d.totalDowntime ?? 0), borderColor: '#6366f1', backgroundColor: '#c7d2fe' }],
           }}
           options={chartOptions}
         />
       </div>
-      <div className="h-48"><h3 className="font-semibold mb-2">Issue Types</h3>
+      <div className="h-48"><h3 className="font-semibold mb-2">{t('landing.analytics.card.issueTypesTitle', 'Issue Types')}</h3>
         <Bar
           data={{
             labels: issueTypes.map((d) => d.label || d._id),
-            datasets: [{ label: 'Count', data: issueTypes.map((d) => d.value ?? d.count ?? 0), backgroundColor: '#2982A6' }],
+            datasets: [{ label: t('analytics.datasets.count', 'Count'), data: issueTypes.map((d) => d.value ?? d.count ?? 0), backgroundColor: '#2982A6' }],
           }}
           options={chartOptions}
         />
       </div>
-      <div className="h-48"><h3 className="font-semibold mb-2">Operator Activity</h3>
+      <div className="h-48"><h3 className="font-semibold mb-2">{t('landing.analytics.card.operatorTitle', 'Operator Activity')}</h3>
         <Bar
           data={{
             labels: operatorActivity.map((d) => d.label || d._id),
-            datasets: [{ label: 'Logs', data: operatorActivity.map((d) => d.value ?? d.count ?? 0), backgroundColor: '#34d399' }],
+            datasets: [{ label: t('analytics.datasets.logs', 'Logs'), data: operatorActivity.map((d) => d.value ?? d.count ?? 0), backgroundColor: '#34d399' }],
           }}
           options={chartOptions}
         />

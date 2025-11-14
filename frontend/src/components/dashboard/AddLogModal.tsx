@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useCompany } from "@/context/useCompany";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Line {
   _id: string;
@@ -61,6 +62,7 @@ export function AddLogModal({
 }: AddLogModalProps) {
   const [operators, setOperators] = useState<{ _id: string; name: string }[]>([]);
   const { company } = useCompany();
+  const { t } = useLanguage();
   const [form, setForm] = useState<AddLogForm>({
     lineId: "",
     machineId: "",
@@ -180,7 +182,7 @@ export function AddLogModal({
         });
         fileUrl = res.data.url;
         handleChange("fileUrl", fileUrl);
-        toast.success("File uploaded");
+        toast.success(t('addLog.toast.fileUploaded', 'File uploaded'));
       } finally {
         setFileUploading(false);
       }
@@ -204,7 +206,7 @@ export function AddLogModal({
     } else {
       await api.post("/records", payload);
     }
-    toast.success("Log updated");
+    toast.success(isEdit ? t('addLog.toast.updated', 'Log updated') : t('addLog.toast.created', 'Log created'));
     onSubmit(form);
     setOpen(false);
   };
@@ -213,12 +215,14 @@ export function AddLogModal({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-xl w-full p-4 rounded-lg shadow-lg bg-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold mb-2">{isEdit ? "Edit Log" : "Add Log"}</DialogTitle>
+          <DialogTitle className="text-lg font-semibold mb-2">
+            {isEdit ? t('addLog.modal.editTitle', 'Edit Log') : t('addLog.modal.addTitle', 'Add Log')}
+          </DialogTitle>
         </DialogHeader>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 flex flex-col gap-1">
-              <Label className="text-xs mb-1 font-medium">Date/Time</Label>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.dateTime', 'Date/Time')}</Label>
               <Input
                 disabled
                 type="datetime-local"
@@ -229,27 +233,27 @@ export function AddLogModal({
               />
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs mb-1 font-medium">Operator</Label>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.operator', 'Operator')}</Label>
               <Select value={form.operatorId} onValueChange={v => handleChange("operatorId", v)} disabled={isEdit}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select operator" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t('addLog.placeholders.operator', 'Select operator')} /></SelectTrigger>
                 <SelectContent>
                   {operators.map(op => <SelectItem key={op._id} value={op._id} className="text-sm">{op.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs mb-1 font-medium">Line</Label>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.line', 'Line')}</Label>
               <Select value={form.lineId} onValueChange={v => handleChange("lineId", v)} disabled={isEdit}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select line" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t('addLog.placeholders.line', 'Select line')} /></SelectTrigger>
                 <SelectContent>
                   {Array.isArray(lines) ? lines.map(line => <SelectItem key={line._id} value={line._id} className="text-sm">{line.lineName}</SelectItem>) : null}
                 </SelectContent>
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs mb-1 font-medium">Machine</Label>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.machine', 'Machine')}</Label>
               <Select value={form.machineId} onValueChange={v => handleChange("machineId", v)} disabled={isEdit}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select machine" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t('addLog.placeholders.machine', 'Select machine')} /></SelectTrigger>
                 <SelectContent>
                   {Array.isArray(machines)
                     ? machines
@@ -266,9 +270,9 @@ export function AddLogModal({
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs mb-1 font-medium">Shift</Label>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.shift', 'Shift')}</Label>
               <Select value={form.shift} onValueChange={v => handleChange("shift", v)} disabled={isEdit}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select shift" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t('addLog.placeholders.shift', 'Select shift')} /></SelectTrigger>
                 <SelectContent>
                   {Array.isArray(company?.shiftTimings)
                     ? (company.shiftTimings as { name: string; start?: string; end?: string }[]).map((shift, idx) => (
@@ -281,31 +285,31 @@ export function AddLogModal({
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs mb-1 font-medium">Note Type</Label>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.noteType', 'Note Type')}</Label>
               <Select value={form.noteType} onValueChange={v => handleChange("noteType", v)} disabled={isEdit}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select note type" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t('addLog.placeholders.noteType', 'Select note type')} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Observation" className="text-sm">Observation</SelectItem>
-                  <SelectItem value="Breakdown" className="text-sm">Breakdown</SelectItem>
-                  <SelectItem value="Setup" className="text-sm">Setup</SelectItem>
-                  <SelectItem value="Quality" className="text-sm">Quality</SelectItem>
+                  <SelectItem value="Observation" className="text-sm">{t('addLog.noteTypes.observation', 'Observation')}</SelectItem>
+                  <SelectItem value="Breakdown" className="text-sm">{t('addLog.noteTypes.breakdown', 'Breakdown')}</SelectItem>
+                  <SelectItem value="Setup" className="text-sm">{t('addLog.noteTypes.setup', 'Setup')}</SelectItem>
+                  <SelectItem value="Quality" className="text-sm">{t('addLog.noteTypes.quality', 'Quality')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <Label className="text-xs mb-1 font-medium">Severity</Label>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.severity', 'Severity')}</Label>
               <Slider min={1} max={5} step={1} value={[form.severity]} onValueChange={v => handleChange("severity", v[0])} className="flex-1 h-2" />
               <span className="text-xs ml-2">{form.severity}</span>
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs mb-1 font-medium">Description</Label>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.description', 'Description')}</Label>
               <Textarea
                 maxLength={500}
                 value={form.description}
                 onChange={e => handleChange("description", e.target.value)}
-                placeholder="Description"
+                placeholder={t('addLog.placeholders.description', 'Description')}
                 className="min-h-12 text-sm bg-gray-50 border-gray-300 rounded"
               />
             </div>
@@ -313,43 +317,43 @@ export function AddLogModal({
           {form.noteType === "Breakdown" && (
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <Label className="text-xs mb-1 font-medium">Downtime Start</Label>
+                <Label className="text-xs mb-1 font-medium">{t('addLog.fields.downtimeStart', 'Downtime Start')}</Label>
                 <Input type="datetime-local" value={form.downtimeStart} onChange={e => handleChange("downtimeStart", e.target.value)} required className="h-9 text-sm bg-gray-50 border-gray-300 rounded" disabled={isEdit} />
               </div>
               <div className="flex flex-col gap-1">
-                <Label className="text-xs mb-1 font-medium">Downtime End</Label>
+                <Label className="text-xs mb-1 font-medium">{t('addLog.fields.downtimeEnd', 'Downtime End')}</Label>
                 <Input type="datetime-local" value={form.downtimeEnd} onChange={e => handleChange("downtimeEnd", e.target.value)} className="h-9 text-sm bg-gray-50 border-gray-300 rounded" disabled={isEdit} />
               </div>
             </div>
           )}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
-              <Label className="text-xs mb-1 font-medium">Status</Label>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.status', 'Status')}</Label>
               <Select value={form.status} onValueChange={v => handleChange("status", v)}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t('addLog.placeholders.status', 'Status')} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Open" className="text-sm">Open</SelectItem>
-                  <SelectItem value="Closed" className="text-sm">Closed</SelectItem>
+                  <SelectItem value="Open" className="text-sm">{t('addLog.status.open', 'Open')}</SelectItem>
+                  <SelectItem value="Closed" className="text-sm">{t('addLog.status.closed', 'Closed')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs mb-1 font-medium">Duration (min)</Label>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.duration', 'Duration (min)')}</Label>
               <Input value={form.downtimeStart && form.downtimeEnd ? Math.max(0, Math.round((new Date(form.downtimeEnd).getTime() - new Date(form.downtimeStart).getTime()) / 60000)) : form.duration} disabled className="h-9 text-sm bg-gray-50 border-gray-300 rounded" />
             </div>
           </div>
           <div className="flex flex-col gap-2">
             <Label className="text-xs mb-1 font-medium">
-              Image/Video (max 12MB)
+              {t('addLog.fields.media', 'Image/Video (max 12MB)')}
             </Label>
-             <span className="block text-[11px] text-muted-foreground font-normal">( Supported: JPG, JPEG, PNG, WEBP, GIF, MP4, WEBM, MOV, AVI )</span>
+             <span className="block text-[11px] text-muted-foreground font-normal">{t('addLog.fields.mediaHelp', '( Supported: JPG, JPEG, PNG, WEBP, GIF, MP4, WEBM, MOV, AVI )')}</span>
             <Input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime,video/x-msvideo"
               onChange={handleFileChange}
               disabled={fileUploading || isEdit}
             />
-            {fileUploading && <span className="text-xs text-primary">Uploading...</span>}
+            {fileUploading && <span className="text-xs text-primary">{t('common.uploading', 'Uploading...')}</span>}
             {filePreview && form.photo && form.photo.type.startsWith("image/") && (
               <img
                 src={filePreview}
@@ -405,7 +409,7 @@ export function AddLogModal({
           </div>
           <div className="flex justify-end mt-2">
             <Button type="submit" className="w-full sm:w-auto h-9 px-6 text-sm font-medium bg-black text-white rounded" disabled={fileUploading}>
-              {fileUploading ? "Uploading..." : "Submit"}
+              {fileUploading ? t('common.uploading', 'Uploading...') : t('addLog.buttons.submit', 'Submit')}
             </Button>
           </div>
         </form>

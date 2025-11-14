@@ -17,6 +17,7 @@ import {
 } from "../ui/pagination";
 import { toast } from "sonner";
 import { useCompany } from "@/context/useCompany";
+import { useLanguage } from "@/context/LanguageContext";
 
 type Log = {
   _id: string;
@@ -31,6 +32,18 @@ type Log = {
   status?: string;
 };
 
+const NOTE_TYPE_LABELS: Record<string, string> = {
+  Observation: 'addLog.noteTypes.observation',
+  Breakdown: 'addLog.noteTypes.breakdown',
+  Setup: 'addLog.noteTypes.setup',
+  Quality: 'addLog.noteTypes.quality',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  Open: 'addLog.status.open',
+  Closed: 'addLog.status.closed',
+};
+
 interface LogsSearchProps {
   setAddLogOpen: (open: boolean) => void;
   lines: { _id: string; lineName: string }[];
@@ -40,22 +53,27 @@ interface LogsSearchProps {
   companyId: string;
 }
 
+const initialFilters = {
+  dateTime: "",
+  downtimeStart: "",
+  downtimeEnd: "",
+  lineId: "",
+  machineId: "",
+  shift: "",
+  noteType: "",
+  status: "",
+  description: "",
+};
+
+type FilterState = typeof initialFilters;
+
 export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditLog, companyId }: LogsSearchProps) {
   const [logs, setLogs] = useState<Log[]>([]);
   const { company } = useCompany();
-  const [filters, setFilters] = useState({
-    dateTime: "", // for date-only search
-    downtimeStart: "",
-    downtimeEnd: "",
-    lineId: "",
-    machineId: "",
-    shift: "",
-    noteType: "",
-    status: "",
-    description: "",
-  });
+  const { t } = useLanguage();
+  const [filters, setFilters] = useState<FilterState>(() => ({ ...initialFilters }));
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [pendingFilters, setPendingFilters] = useState(filters);
+  const [pendingFilters, setPendingFilters] = useState<FilterState>(() => ({ ...initialFilters }));
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(0);
@@ -66,17 +84,17 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
   }, [filters, page, limit, refreshKey, companyId]);
 
   const fetchLogs = async () => {
-    const params = { ...filters, page, limit, companyId };
+    const params: Record<string, string | number> = { ...filters, page, limit, companyId };
     // Remove empty string filters to avoid sending "" for ObjectId fields
-    Object.keys(params).forEach((k) => {
-      if (typeof params[k] === "string" && params[k] === "") delete params[k];
+    Object.keys(filters).forEach((k) => {
+      if (params[k] === "") delete params[k];
     });
     const res = await api.get("/records", { params });
     setLogs(res.data.data);
     setTotal(res.data.total);
   };
 
-  const handleFilter = (field: string, value: string) => {
+  const handleFilter = (field: keyof FilterState, value: string) => {
     setPendingFilters(f => ({ ...f, [field]: value }));
   };
 
@@ -87,17 +105,7 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
   };
 
   const handleResetFilters = () => {
-    const reset = {
-      dateTime: "",
-      downtimeStart: "",
-      downtimeEnd: "",
-      lineId: "",
-      machineId: "",
-      shift: "",
-      noteType: "",
-      status: "",
-      description: "",
-    };
+    const reset = { ...initialFilters };
     setPendingFilters(reset);
     setFilters(reset);
     setPage(1);
@@ -122,7 +130,7 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
       link.click();
       document.body.removeChild(link);
     } catch (err) {
-     toast.error('Failed to export CSV.');
+     toast.error(t('logs.actions.exportError', 'Failed to export CSV.'));
     }
   };
 
@@ -130,7 +138,9 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
     <div className="space-y-6 mt-2">
       {/* Action row: Add Log, Export CSV, Filters (inline) */}
       <div className="flex flex-row justify-between items-center gap-2 mb-2">
-        <Button onClick={() => setAddLogOpen(true)} size="sm" className="whitespace-nowrap">Add Log</Button>
+        <Button onClick={() => setAddLogOpen(true)} size="sm" className="whitespace-nowrap">
+          {t('logs.addLog', 'Add Log')}
+        </Button>
     <div className="flex flex-row justify-end items-center gap-2 mb-2">
          <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
           <PopoverTrigger asChild>
@@ -144,7 +154,7 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
                   : "")
               }
             >
-              Filters
+              {t('logs.filters.title', 'Filters')}
               {Object.values(filters).some(v => v) && (
                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary animate-pulse" />
               )}
@@ -153,25 +163,25 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
           <PopoverContent className="w-[340px] max-w-full p-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor="dateTime" className="text-xs mb-1">Date</Label>
+                <Label htmlFor="dateTime" className="text-xs mb-1">{t('logs.filters.date', 'Date')}</Label>
                 <Input id="dateTime" type="date" value={pendingFilters.dateTime} onChange={e => handleFilter('dateTime', e.target.value)} className="h-8 text-xs px-2" />
               </div>
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor="downtimeStart" className="text-xs mb-1">Downtime Start</Label>
+                <Label htmlFor="downtimeStart" className="text-xs mb-1">{t('addLog.fields.downtimeStart', 'Downtime Start')}</Label>
                 <Input id="downtimeStart" type="date" value={pendingFilters.downtimeStart} onChange={e => handleFilter('downtimeStart', e.target.value)} className="h-8 text-xs px-2" />
               </div>
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor="downtimeEnd" className="text-xs mb-1">Downtime End</Label>
+                <Label htmlFor="downtimeEnd" className="text-xs mb-1">{t('addLog.fields.downtimeEnd', 'Downtime End')}</Label>
                 <Input id="downtimeEnd" type="date" value={pendingFilters.downtimeEnd} onChange={e => handleFilter('downtimeEnd', e.target.value)} className="h-8 text-xs px-2" />
               </div>
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor="description" className="text-xs mb-1">Description</Label>
-                <Input id="description" value={pendingFilters.description} onChange={e => handleFilter('description', e.target.value)} placeholder="Description" className="h-8 text-xs px-2" />
+                <Label htmlFor="description" className="text-xs mb-1">{t('common.description', 'Description')}</Label>
+                <Input id="description" value={pendingFilters.description} onChange={e => handleFilter('description', e.target.value)} placeholder={t('logs.filters.descriptionPlaceholder', 'Description')} className="h-8 text-xs px-2" />
               </div>
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor="lineId" className="text-xs mb-1">Line</Label>
+                <Label htmlFor="lineId" className="text-xs mb-1">{t('common.line', 'Line')}</Label>
                 <Select value={pendingFilters.lineId} onValueChange={v => handleFilter('lineId', v)}>
-                  <SelectTrigger id="lineId" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder="All Lines" /></SelectTrigger>
+                  <SelectTrigger id="lineId" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder={t('logs.filters.allLines', 'All Lines')} /></SelectTrigger>
                   <SelectContent>
                     {Array.isArray(lines) && lines.length > 0 && lines.map(line => (
                       <SelectItem key={line._id} value={line._id}>{line.lineName}</SelectItem>
@@ -180,9 +190,9 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
                 </Select>
               </div>
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor="machineId" className="text-xs mb-1">Machine</Label>
+                <Label htmlFor="machineId" className="text-xs mb-1">{t('common.machine', 'Machine')}</Label>
                 <Select value={pendingFilters.machineId} onValueChange={v => handleFilter('machineId', v)}>
-                  <SelectTrigger id="machineId" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder="All Machines" /></SelectTrigger>
+                  <SelectTrigger id="machineId" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder={t('logs.filters.allMachines', 'All Machines')} /></SelectTrigger>
                   <SelectContent>
                     {Array.isArray(machines) && machines.length > 0 && machines
                       .filter(m => {
@@ -203,9 +213,9 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
                 </Select>
               </div>
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor="shift" className="text-xs mb-1">Shift</Label>
+                <Label htmlFor="shift" className="text-xs mb-1">{t('common.shift', 'Shift')}</Label>
                 <Select value={pendingFilters.shift} onValueChange={v => handleFilter('shift', v)}>
-                  <SelectTrigger id="shift" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder="All Shifts" /></SelectTrigger>
+                  <SelectTrigger id="shift" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder={t('logs.filters.allShifts', 'All Shifts')} /></SelectTrigger>
                   <SelectContent>
                     {Array.isArray(company?.shiftTimings)
                       ? (company.shiftTimings as { name: string; start?: string; end?: string }[]).map((shift, idx) => (
@@ -218,56 +228,60 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
                 </Select>
               </div>
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor="noteType" className="text-xs mb-1">Type</Label>
+                <Label htmlFor="noteType" className="text-xs mb-1">{t('logs.filters.noteType', 'Type')}</Label>
                 <Select value={pendingFilters.noteType} onValueChange={v => handleFilter('noteType', v)}>
-                  <SelectTrigger id="noteType" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder="All Types" /></SelectTrigger>
+                  <SelectTrigger id="noteType" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder={t('logs.filters.allTypes', 'All Types')} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Observation">Observation</SelectItem>
-                    <SelectItem value="Breakdown">Breakdown</SelectItem>
-                    <SelectItem value="Setup">Setup</SelectItem>
-                    <SelectItem value="Quality">Quality</SelectItem>
+                    <SelectItem value="Observation">{t('addLog.noteTypes.observation', 'Observation')}</SelectItem>
+                    <SelectItem value="Breakdown">{t('addLog.noteTypes.breakdown', 'Breakdown')}</SelectItem>
+                    <SelectItem value="Setup">{t('addLog.noteTypes.setup', 'Setup')}</SelectItem>
+                    <SelectItem value="Quality">{t('addLog.noteTypes.quality', 'Quality')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex flex-col gap-0.5">
-                <Label htmlFor="status" className="text-xs mb-1">Status</Label>
+                <Label htmlFor="status" className="text-xs mb-1">{t('common.status', 'Status')}</Label>
                 <Select value={pendingFilters.status} onValueChange={v => handleFilter('status', v)}>
-                  <SelectTrigger id="status" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+                  <SelectTrigger id="status" size="sm" className="h-8 text-xs px-2"><SelectValue placeholder={t('logs.filters.allStatuses', 'All Statuses')} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Open">Open</SelectItem>
-                    <SelectItem value="Closed">Closed</SelectItem>
+                    <SelectItem value="Open">{t('addLog.status.open', 'Open')}</SelectItem>
+                    <SelectItem value="Closed">{t('addLog.status.closed', 'Closed')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-4">
-              <Button size="sm" variant="outline" onClick={handleResetFilters}>Reset</Button>
-              <Button size="sm" onClick={handleApplyFilters}>Apply</Button>
+              <Button size="sm" variant="outline" onClick={handleResetFilters}>{t('logs.filters.reset', 'Reset')}</Button>
+              <Button size="sm" onClick={handleApplyFilters}>{t('logs.filters.apply', 'Apply')}</Button>
             </div>
           </PopoverContent>
         </Popover>
-        <Button variant="outline" size="sm" onClick={handleExportCsv} className="whitespace-nowrap">Export CSV</Button>
+        <Button variant="outline" size="sm" onClick={handleExportCsv} className="whitespace-nowrap">
+          {t('logs.actions.exportCsv', 'Export CSV')}
+        </Button>
       </div>
       </div>
       <div className="overflow-x-auto rounded-lg border bg-white min-h-[260px] flex flex-col justify-between">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Line</TableHead>
-              <TableHead>Machine</TableHead>
-              <TableHead>Shift</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Severity</TableHead>
-              <TableHead>Downtime (min)</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t('logs.table.date', 'Date')}</TableHead>
+              <TableHead>{t('common.line', 'Line')}</TableHead>
+              <TableHead>{t('common.machine', 'Machine')}</TableHead>
+              <TableHead>{t('common.shift', 'Shift')}</TableHead>
+              <TableHead>{t('logs.table.type', 'Type')}</TableHead>
+              <TableHead>{t('addLog.fields.severity', 'Severity')}</TableHead>
+              <TableHead>{t('logs.table.downtime', 'Downtime (min)')}</TableHead>
+              <TableHead>{t('common.description', 'Description')}</TableHead>
+              <TableHead>{t('common.status', 'Status')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {(Array.isArray(logs) && logs.length === 0) ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">No logs found.</TableCell>
+                <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                  {t('logs.table.empty', 'No logs found.')}
+                </TableCell>
               </TableRow>
             ) : (Array.isArray(logs) ? logs : []).map(log => (
               <TableRow
@@ -279,11 +293,23 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
                 <TableCell>{typeof log.lineId === 'object' && log.lineId !== null ? log.lineId.lineName : log.lineId || ""}</TableCell>
                 <TableCell>{typeof log.machineId === 'object' && log.machineId !== null ? log.machineId.machineName : log.machineId || ""}</TableCell>
                 <TableCell>{log.shift}</TableCell>
-                <TableCell>{log.noteType}</TableCell>
+                <TableCell>
+                  {log.noteType
+                    ? NOTE_TYPE_LABELS[log.noteType]
+                      ? t(NOTE_TYPE_LABELS[log.noteType], log.noteType)
+                      : log.noteType
+                    : ''}
+                </TableCell>
                 <TableCell>{log.severity}</TableCell>
                 <TableCell>{log.duration ?? 0}</TableCell>
                 <TableCell className="max-w-xs truncate" title={log.description}>{log.description}</TableCell>
-                <TableCell>{log.status}</TableCell>
+                <TableCell>
+                  {log.status
+                    ? STATUS_LABELS[log.status]
+                      ? t(STATUS_LABELS[log.status], log.status)
+                      : log.status
+                    : ''}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -363,7 +389,7 @@ export function LogsSearch({ setAddLogOpen, lines, machines, refreshKey, onEditL
           </Pagination>
         </div>
         <div className="flex items-center justify-center gap-2 text-sm">
-          <span>Rows per page:</span>
+          <span>{t('logs.pagination.rowsPerPage', 'Rows per page:')}</span>
           <Select value={String(limit)} onValueChange={v => setLimit(Number(v))}>
             <SelectTrigger className="w-20 h-8 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
