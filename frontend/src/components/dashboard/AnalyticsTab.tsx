@@ -105,7 +105,7 @@ export default function AnalyticsTab() {
         <Bar
           data={{
             labels: issueTypes.map((d) => d.label || d._id),
-            datasets: [{ label: 'Count', data: issueTypes.map((d) => d.value ?? d.count ?? 0), backgroundColor: '#f472b6' }],
+            datasets: [{ label: 'Count', data: issueTypes.map((d) => d.value ?? d.count ?? 0), backgroundColor: '#2982A6' }],
           }}
           options={chartOptions}
         />
