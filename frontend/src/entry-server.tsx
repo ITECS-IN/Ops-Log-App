@@ -3,6 +3,8 @@ import { renderToString } from 'react-dom/server';
 import { StaticRouter, Routes, Route } from 'react-router';
 import LandingPage from './pages/LandingPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Security from './pages/Security';
 import { LanguageProvider } from "@/context/LanguageContext";
 
 export function render(url: string) {
@@ -14,6 +16,8 @@ export function render(url: string) {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/security" element={<Security />} />
           </Routes>
         </StaticRouter>
       </LanguageProvider>

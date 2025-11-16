@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import LandingPage from './pages/LandingPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Security from './pages/Security';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -25,6 +27,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/security" element={<Security />} />
           <Route path="/login" element={<LoginRedirectIfAuthenticated><Login /></LoginRedirectIfAuthenticated>} />
           <Route path="/signup" element={<LoginRedirectIfAuthenticated><Signup /></LoginRedirectIfAuthenticated>} />
           <Route path="/dashboard" element={<ProtectedRoute><CompanyProvider><Layout><Dashboard /></Layout></CompanyProvider></ProtectedRoute>} />
