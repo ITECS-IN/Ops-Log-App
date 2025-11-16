@@ -2,16 +2,18 @@ import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { StaticRouter, Routes, Route } from 'react-router';
 import LandingPage from './pages/LandingPage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import { LanguageProvider } from "@/context/LanguageContext";
 
 export function render(url: string) {
-  // Only render landing page for SSR
+  // Render public pages for SSR
   const html = renderToString(
     <StrictMode>
       <LanguageProvider>
         <StaticRouter location={url}>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           </Routes>
         </StaticRouter>
       </LanguageProvider>

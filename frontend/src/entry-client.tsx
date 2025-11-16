@@ -3,6 +3,7 @@ import { hydrateRoot, createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import LandingPage from './pages/LandingPage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -23,6 +24,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/login" element={<LoginRedirectIfAuthenticated><Login /></LoginRedirectIfAuthenticated>} />
           <Route path="/signup" element={<LoginRedirectIfAuthenticated><Signup /></LoginRedirectIfAuthenticated>} />
           <Route path="/dashboard" element={<ProtectedRoute><CompanyProvider><Layout><Dashboard /></Layout></CompanyProvider></ProtectedRoute>} />
