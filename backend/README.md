@@ -37,16 +37,23 @@ This endpoint is intentionally left outside the Firebase auth middleware so it c
 
 ### Lead notification email setup
 
-To receive an email at `itechlicense@outlook.com` every time a landing-page lead is created, configure SMTP credentials via the following environment variables:
+To receive an email every time a landing-page lead is created, configure Mailjet API credentials via the following environment variables:
 
 | Variable | Description |
 | --- | --- |
-| `EMAIL_HOST`, `EMAIL_PORT` | SMTP server host and port (465 implies TLS). |
-| `EMAIL_USER`, `EMAIL_PASS` | Login credentials for the SMTP server. |
+| `MAILJET_API_KEY` | Your Mailjet API key (public key). |
+| `MAILJET_SECRET_KEY` | Your Mailjet secret key (private key). |
 | `EMAIL_FROM` | Display name/address for outgoing notifications, e.g. `"Ops-log" <no-reply@ops-log.com>`. |
 | `LEAD_NOTIFICATION_TO` | Destination mailbox. Defaults to `itechlicense@outlook.com` if omitted. |
 
-If any of the SMTP variables are missing the backend will skip sending mail but continue storing leads.
+If any of the Mailjet variables are missing, the backend will skip sending mail but continue storing leads. You can obtain your Mailjet API credentials from the [Mailjet dashboard](https://app.mailjet.com/account/api_keys).
+
+**Important:** Before sending emails, you must validate your sender email address in Mailjet:
+1. Go to [Mailjet Senders & Domains](https://app.mailjet.com/account/sender)
+2. Add your sender email address (e.g., `contact@itecs.fr`)
+3. Complete the validation process (email confirmation or DNS validation for custom domains)
+
+Without sender validation, emails will fail to send with a "sender not validated" error.
 
 ## Project setup
 

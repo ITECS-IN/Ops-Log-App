@@ -6,13 +6,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import api from '../lib/axios';
 import { useLanguage } from "@/context/LanguageContext";
+import { toast } from 'sonner';
 
 export interface Operator {
   _id?: string;
   name: string;
   employeeCode?: string;
   role?: string;
-  pinCode: string;
+  pinCode?: string;
+  shift?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  companyId?: string;
+  __v?: number;
 }
 
 const ManageOperators: React.FC = () => {
@@ -41,7 +47,12 @@ const ManageOperators: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await api.post('/operators', form);
+    await api.post('/operators', {
+      ...form,
+      shift: 'A', // Default shift value
+      pinCode: '1234', // Default pinCode value
+    });
+    toast.success(t('admin.operators.toast.addSuccess', 'Operator added successfully'));
     setForm({});
     setAddOpen(false);
     fetchOperators();
@@ -55,8 +66,18 @@ const ManageOperators: React.FC = () => {
   const handleUpdate = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!editOperator?._id) return;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { _id, ...updatePayload } = form;
+
+  // eslint disable 
+  delete updatePayload.createdAt;
+  delete updatePayload.updatedAt;
+  delete updatePayload.__v;
+  delete updatePayload.companyId;
+  // eslint enable
+  
   await api.put(`/operators/${editOperator._id}`, updatePayload);
+  toast.success(t('admin.operators.toast.updateSuccess', 'Operator updated successfully'));
   setEditOperator(null);
   setForm({});
   fetchOperators();
@@ -83,7 +104,7 @@ const ManageOperators: React.FC = () => {
                   <TableHead>{t('common.name', 'Name')}</TableHead>
                   <TableHead>{t('admin.operators.table.employeeCode', 'Employee Code')}</TableHead>
                   <TableHead>{t('admin.operators.table.role', 'Role')}</TableHead>
-                  <TableHead>{t('admin.operators.table.pinCode', 'Pin Code')}</TableHead>
+                  {/* <TableHead>{t('admin.operators.table.pinCode', 'Pin Code')}</TableHead> */}
                   <TableHead>{t('common.actions', 'Actions')}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -93,7 +114,7 @@ const ManageOperators: React.FC = () => {
                     <TableCell className="font-medium">{op.name}</TableCell>
                     <TableCell>{op.employeeCode}</TableCell>
                     <TableCell>{op.role}</TableCell>
-                    <TableCell>{op.pinCode}</TableCell>
+                    {/* <TableCell>{op.pinCode}</TableCell> */}
                     <TableCell>
                       <Button size="sm" variant="outline" onClick={() => handleEdit(op)}>{t('common.edit', 'Edit')}</Button>
                       <Button size="sm" variant="destructive" onClick={() => handleDelete(op._id!)} className="ml-2">
@@ -117,7 +138,7 @@ const ManageOperators: React.FC = () => {
             <Input name="name" placeholder={t('admin.operators.placeholder.name', 'Name')} value={form.name || ''} onChange={handleChange} required />
             <Input name="employeeCode" placeholder={t('admin.operators.placeholder.employeeCode', 'Employee Code')} value={form.employeeCode || ''} onChange={handleChange} />
             <Input name="role" placeholder={t('admin.operators.placeholder.role', 'Role')} value={form.role || ''} onChange={handleChange} />
-            <Input name="pinCode" placeholder={t('admin.operators.placeholder.pinCode', 'Pin Code')} value={form.pinCode || ''} onChange={handleChange} required />
+            {/* <Input name="pinCode" placeholder={t('admin.operators.placeholder.pinCode', 'Pin Code')} value={form.pinCode || ''} onChange={handleChange} required /> */}
             <Button size="sm" type="submit">{t('common.add', 'Add')}</Button>
           </form>
         </DialogContent>
@@ -132,7 +153,7 @@ const ManageOperators: React.FC = () => {
             <Input name="name" placeholder={t('admin.operators.placeholder.name', 'Name')} value={form.name || ''} onChange={handleChange} required />
             <Input name="employeeCode" placeholder={t('admin.operators.placeholder.employeeCode', 'Employee Code')} value={form.employeeCode || ''} onChange={handleChange} />
             <Input name="role" placeholder={t('admin.operators.placeholder.role', 'Role')} value={form.role || ''} onChange={handleChange} />
-            <Input name="pinCode" placeholder={t('admin.operators.placeholder.pinCode', 'Pin Code')} value={form.pinCode || ''} onChange={handleChange} required />
+            {/* <Input name="pinCode" placeholder={t('admin.operators.placeholder.pinCode', 'Pin Code')} value={form.pinCode || ''} onChange={handleChange} required /> */}
             <Button size="sm" type="submit">{t('common.update', 'Update')}</Button>
           </form>
         </DialogContent>

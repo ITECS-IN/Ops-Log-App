@@ -44,8 +44,8 @@ type LeadFormState = {
   company: string;
   phone: string;
   notes: string;
-  password: string;
-  termsAccepted: boolean;
+  password?: string;
+  termsAccepted?: boolean;
 };
 
 const createEmptyLeadForm = (): LeadFormState => ({
@@ -132,11 +132,15 @@ export default function LandingPage() {
       // For subscription CTA, collect lead as before
       setIsSubmittingLead(true);
       try {
-        await api.post('/leads', {
+         const payload = {
           ...leadForm,
           source: 'landing-page',
           cta: CTA_CONFIG[activeCta].ctaId
-        });
+        }
+
+        delete payload.password;
+        delete payload.termsAccepted;
+        await api.post('/leads', payload);
         toast.success(t('landing.modal.success', "Thanks for reaching out! We'll contact you shortly."));
         closeLeadModal();
       } catch {
