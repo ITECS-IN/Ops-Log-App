@@ -6,6 +6,7 @@ import api from "@/lib/axios";
 import { toast } from "sonner";
 import { useLanguage } from "@/context/LanguageContext";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { Link } from "react-router";
 
 export default function Signup() {
   useEffect(() => {
@@ -44,8 +45,10 @@ export default function Signup() {
         className="bg-white/90 dark:bg-gray-900/90 p-6 sm:p-8 md:p-10 rounded-xl shadow-xl w-full max-w-[90%] sm:max-w-md space-y-4 sm:space-y-5 border border-gray-100 dark:border-gray-800 animate-fade-in"
       >
         <div className="flex justify-center mb-2">
-          <AppLogo size={48} className="sm:hidden" />
-          <AppLogo size={64} className="hidden sm:block" />
+          <Link to="/" className="cursor-pointer">
+            <AppLogo size={48} className="sm:hidden" />
+            <AppLogo size={64} className="hidden sm:block" />
+          </Link>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-center text-primary tracking-tight">{t('common.createAccountCta', 'Create your Ops-log account')}</h2>
         <p className="text-center text-muted-foreground mb-2 text-xs sm:text-sm">{t('common.createAccountSubtitle', 'Sign up to get started')}</p>

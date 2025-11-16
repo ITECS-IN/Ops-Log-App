@@ -3,7 +3,7 @@ import { AppLogo } from "@/components/ui/AppLogo";
 import firebaseApp from "@/lib/firebase";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { toast } from "sonner";
 import { useLanguage } from "@/context/LanguageContext";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
@@ -68,8 +68,10 @@ export default function Login() {
         className="bg-white/90 dark:bg-gray-900/90 p-6 sm:p-8 md:p-10 rounded-xl shadow-xl w-full max-w-[90%] sm:max-w-md space-y-4 sm:space-y-5 border border-gray-100 dark:border-gray-800 animate-fade-in"
       >
         <div className="flex justify-center mb-2">
-          <AppLogo size={48} className="sm:hidden" />
-          <AppLogo size={64} className="hidden sm:block" />
+          <Link to="/" className="cursor-pointer">
+            <AppLogo size={48} className="sm:hidden" />
+            <AppLogo size={64} className="hidden sm:block" />
+          </Link>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-center text-primary tracking-tight">{t('login.title', 'Sign in to Ops-log')}</h2>
         <p className="text-center text-muted-foreground mb-2 text-xs sm:text-sm">{t('login.subtitle', 'Enter your credentials to continue')}</p>
@@ -104,14 +106,6 @@ export default function Login() {
               {t('login.loading', 'Logging in...')}
             </span>
           ) : t('login.button', 'Login')}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full py-2.5 sm:py-3 text-sm sm:text-base"
-          onClick={() => window.location.href = '/signup'}
-        >
-          {t('common.createAccount', 'Create an account')}
         </Button>
       </form>
       <style>{`
