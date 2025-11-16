@@ -627,7 +627,7 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-8 sm:mt-12 bg-gray-50 rounded-2xl p-6 sm:p-8">
-            <div className="grid sm:grid-cols-3 gap-6 sm:gap-8 text-center">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 text-center">
               <div>
                 <div className="text-3xl font-bold text-brand-600 mb-2">100%</div>
                 <div className="text-gray-600">{t('landing.technology.typesafe', 'Type-safe with TypeScript')}</div>
@@ -639,6 +639,10 @@ export default function LandingPage() {
               <div>
                 <div className="text-3xl font-bold text-brand-600 mb-2">Docker</div>
                 <div className="text-gray-600">{t('landing.technology.docker', 'Ready deployment')}</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-brand-600 mb-2">GDPR</div>
+                <div className="text-gray-600">{t('landing.technology.gdpr', 'Fully hosted on secure European servers')}</div>
               </div>
             </div>
           </div>
@@ -734,53 +738,106 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-8 sm:py-12">
+      <footer className="bg-gray-900 text-gray-300 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-            <div className="col-span-2 md:col-span-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+            {/* Left Section - Company Info */}
+            <div className="sm:col-span-2 lg:col-span-1">
               <div className="flex items-center space-x-2 mb-4">
-                <AppLogo size={32} className="sm:block md:hidden" />
-                <AppLogo size={40} className="hidden sm:block" />
-                <span className="text-base sm:text-xl font-bold text-white">Ops-log</span>
+                <AppLogo size={40} />
+                <span className="text-xl font-bold text-white">Ops-log</span>
               </div>
-              <p className="text-xs sm:text-sm">
-                {t('landing.footer.description', 'Manufacturing operations management platform for real-time production visibility.')}
+              <p className="text-sm text-gray-400 mb-4 leading-relaxed">
+                A manufacturing operations management platform providing real-time production visibility, developed by
               </p>
+              <div className="mb-4">
+                <p className="text-lg font-bold text-white mb-1">ITECS</p>
+                <p className="text-sm text-gray-400">Industrial Tech Solutions</p>
+              </div>
+              <div className="text-sm text-gray-400 leading-relaxed">
+                <p>320 Rue des Sorbiers,</p>
+                <p>74300 Thyez, France</p>
+              </div>
             </div>
 
-            <div>
-              <h4 className="font-bold text-white mb-4">{t('landing.footer.product', 'Product')}</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#features" className="hover:text-brand-400 transition-colors">{t('landing.nav.features', 'Features')}</a></li>
-                <li><a href="#analytics" className="hover:text-brand-400 transition-colors">{t('landing.nav.analytics', 'Analytics')}</a></li>
-                <li><a href="#technology" className="hover:text-brand-400 transition-colors">{t('landing.nav.technology', 'Technology')}</a></li>
-                <li><a href="#pricing" className="hover:text-brand-400 transition-colors">{t('landing.nav.pricing', 'Pricing')}</a></li>
+            {/* Middle Section - Product */}
+            <div className="sm:col-span-1 lg:col-span-1">
+              <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+                {t('landing.footer.product', 'Product')}
+              </h4>
+              <ul className="space-y-3">
+                <li>
+                  <a
+                    href="#features"
+                    className="text-sm text-gray-400 hover:text-brand-400 transition-colors inline-block"
+                  >
+                    {t('landing.nav.features', 'Features')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#analytics"
+                    className="text-sm text-gray-400 hover:text-brand-400 transition-colors inline-block"
+                  >
+                    {t('landing.nav.analytics', 'Analytics')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#technology"
+                    className="text-sm text-gray-400 hover:text-brand-400 transition-colors inline-block"
+                  >
+                    {t('landing.nav.technology', 'Technology')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#pricing"
+                    className="text-sm text-gray-400 hover:text-brand-400 transition-colors inline-block"
+                  >
+                    {t('landing.nav.pricing', 'Pricing')}
+                  </a>
+                </li>
               </ul>
             </div>
 
-            <div>
-              <h4 className="font-bold text-white mb-4">{t('landing.footer.company', 'Company')}</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-brand-400 transition-colors">{t('landing.footer.about', 'About')}</a></li>
-                <li><a href="#" className="hover:text-brand-400 transition-colors">{t('landing.footer.contact', 'Contact')}</a></li>
-                <li><a href="#" className="hover:text-brand-400 transition-colors">{t('landing.footer.support', 'Support')}</a></li>
-                <li><a href="#" className="hover:text-brand-400 transition-colors">{t('landing.footer.documentation', 'Documentation')}</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-white mb-4">{t('landing.footer.legal', 'Legal')}</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link to="/privacy-policy" className="hover:text-brand-400 transition-colors">{t('landing.footer.privacy', 'Privacy Policy')}</Link></li>
-                <li><Link to="/terms-of-service" className="hover:text-brand-400 transition-colors">{t('landing.footer.terms', 'Terms of Service')}</Link></li>
-                <li><Link to="/security" className="hover:text-brand-400 transition-colors">{t('landing.footer.security', 'Security')}</Link></li>
+            {/* Right Section - Legal */}
+            <div className="sm:col-span-1 lg:col-span-1">
+              <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+                {t('landing.footer.legal', 'Legal')}
+              </h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    to="/privacy-policy"
+                    className="text-sm text-gray-400 hover:text-brand-400 transition-colors inline-block"
+                  >
+                    {t('landing.footer.privacy', 'Privacy Policy')}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/terms-of-service"
+                    className="text-sm text-gray-400 hover:text-brand-400 transition-colors inline-block"
+                  >
+                    {t('landing.footer.terms', 'Terms of Service')}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/security"
+                    className="text-sm text-gray-400 hover:text-brand-400 transition-colors inline-block"
+                  >
+                    {t('landing.footer.security', 'Security')}
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 sm:mt-12 pt-6 sm:pt-8 text-xs sm:text-sm text-center">
-            <p className="px-4">
-              &copy; 2024 Ops-log. {t('landing.footer.copyright', 'All rights reserved. Built with React, NestJS, MongoDB, and Firebase.')}
+          <div className="border-t border-gray-800 mt-12 pt-8">
+            <p className="text-sm text-gray-400 text-center">
+              Copyright © {new Date().getFullYear()} ITECS | Industrial Tech Solution. Tous Droits Réservés.
             </p>
           </div>
         </div>

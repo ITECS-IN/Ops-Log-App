@@ -206,7 +206,7 @@ export default function PrivacyPolicy() {
       <footer className="bg-gray-900 text-gray-300 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm">
-            &copy; 2024 Ops-log. All rights reserved.
+            Copyright © {new Date().getFullYear()} ITECS | Industrial Tech Solution. Tous Droits Réservés.
           </p>
         </div>
       </footer>
