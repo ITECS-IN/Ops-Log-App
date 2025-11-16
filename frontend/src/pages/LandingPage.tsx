@@ -44,6 +44,8 @@ type LeadFormState = {
   company: string;
   phone: string;
   notes: string;
+  password: string;
+  termsAccepted: boolean;
 };
 
 const createEmptyLeadForm = (): LeadFormState => ({
@@ -51,7 +53,9 @@ const createEmptyLeadForm = (): LeadFormState => ({
   email: '',
   company: '',
   phone: '',
-  notes: ''
+  notes: '',
+  password: '',
+  termsAccepted: false
 });
 
 export default function LandingPage() {
@@ -92,18 +96,53 @@ export default function LandingPage() {
       return;
     }
 
-    setIsSubmittingLead(true);
-    try {
-      await api.post('/leads', {
-        ...leadForm,
-        source: 'landing-page',
-        cta: CTA_CONFIG[activeCta].ctaId
-      });
-      toast.success(t('landing.modal.success', "Thanks for reaching out! We'll contact you shortly."));
-      closeLeadModal();
-    } catch {
-      // Axios interceptor will surface the exact error to the user.
-      setIsSubmittingLead(false);
+    // For trial CTA, create account directly
+    if (activeCta === 'trial') {
+      if (!leadForm.company.trim()) {
+        toast.error(t('landing.modal.companyRequired', 'Company name is required.'));
+        return;
+      }
+      if (!leadForm.password || leadForm.password.length < 6) {
+        toast.error(t('landing.modal.passwordValidation', 'Password must be at least 6 characters.'));
+        return;
+      }
+      if (!leadForm.termsAccepted) {
+        toast.error(t('landing.modal.termsValidation', 'You must accept the Terms of Service.'));
+        return;
+      }
+
+      setIsSubmittingLead(true);
+      try {
+        await api.post('/auth/signup', {
+          email: leadForm.email,
+          password: leadForm.password,
+          companyName: leadForm.company,
+        });
+        toast.success(t('landing.modal.accountCreated', 'Account created successfully! Please sign in to continue.'));
+        closeLeadModal();
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+      } catch {
+        // Axios interceptor will surface the exact error to the user.
+        setIsSubmittingLead(false);
+      }
+    } else {
+      // For subscription CTA, collect lead as before
+      setIsSubmittingLead(true);
+      try {
+        await api.post('/leads', {
+          ...leadForm,
+          source: 'landing-page',
+          cta: CTA_CONFIG[activeCta].ctaId
+        });
+        toast.success(t('landing.modal.success', "Thanks for reaching out! We'll contact you shortly."));
+        closeLeadModal();
+      } catch {
+        // Axios interceptor will surface the exact error to the user.
+        setIsSubmittingLead(false);
+      }
     }
   };
 
@@ -118,10 +157,10 @@ export default function LandingPage() {
       };
     }
     return {
-      title: t('landing.modal.trialTitle', 'Start Your Free Trial'),
+      title: t('landing.modal.trialTitle', 'Create Your Free Account'),
       description: t(
         'landing.modal.trialDescription',
-        'Tell us a bit about your factory so we can configure your 14-day pilot environment.'
+        'Sign up now and get instant access to your 14-day free trial.'
       ),
     };
   }, [activeCta, t]);
@@ -787,7 +826,7 @@ export default function LandingPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <Label htmlFor="lead-company">{t('landing.modal.company', 'Company')}</Label>
+                <Label htmlFor="lead-company">{t('landing.modal.company', 'Company')} {activeCta === 'trial' && '*'}</Label>
                 <Input
                   id="lead-company"
                   name="company"
@@ -795,6 +834,7 @@ export default function LandingPage() {
                   value={leadForm.company}
                   onChange={(event) => setLeadForm((prev) => ({ ...prev, company: event.target.value }))}
                   disabled={isSubmittingLead}
+                  required={activeCta === 'trial'}
                 />
               </div>
               <div>
@@ -810,28 +850,85 @@ export default function LandingPage() {
                 />
               </div>
             </div>
-            <div>
-              <Label htmlFor="lead-notes">{t('landing.modal.notes', 'What can we help with?')}</Label>
-              <Textarea
-                id="lead-notes"
-                name="notes"
-                placeholder={t('landing.modal.notesPlaceholder', 'Share any context on production lines, shifts, or timelines.')}
-                value={leadForm.notes}
-                onChange={(event) => setLeadForm((prev) => ({ ...prev, notes: event.target.value }))}
-                disabled={isSubmittingLead}
-                rows={4}
-              />
-            </div>
+
+            {/* Password field - only for trial CTA */}
+            {activeCta === 'trial' && (
+              <div>
+                <Label htmlFor="lead-password">{t('landing.modal.password', 'Password *')}</Label>
+                <Input
+                  id="lead-password"
+                  type="password"
+                  name="password"
+                  placeholder={t('landing.modal.passwordPlaceholder', 'Enter a secure password (min. 6 characters)')}
+                  value={leadForm.password}
+                  onChange={(event) => setLeadForm((prev) => ({ ...prev, password: event.target.value }))}
+                  disabled={isSubmittingLead}
+                  required
+                  minLength={6}
+                />
+              </div>
+            )}
+            {/* Notes field - optional for trial, shown for subscription */}
+            {activeCta === 'subscription' && (
+              <div>
+                <Label htmlFor="lead-notes">{t('landing.modal.notes', 'What can we help with?')}</Label>
+                <Textarea
+                  id="lead-notes"
+                  name="notes"
+                  placeholder={t('landing.modal.notesPlaceholder', 'Share any context on production lines, shifts, or timelines.')}
+                  value={leadForm.notes}
+                  onChange={(event) => setLeadForm((prev) => ({ ...prev, notes: event.target.value }))}
+                  disabled={isSubmittingLead}
+                  rows={4}
+                />
+              </div>
+            )}
+
+            {/* Terms and Conditions checkbox - only for trial CTA */}
+            {activeCta === 'trial' && (
+              <div className="flex items-start space-x-2">
+                <input
+                  type="checkbox"
+                  id="lead-terms"
+                  name="termsAccepted"
+                  checked={leadForm.termsAccepted}
+                  onChange={(event) => setLeadForm((prev) => ({ ...prev, termsAccepted: event.target.checked }))}
+                  disabled={isSubmittingLead}
+                  required
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                />
+                <Label htmlFor="lead-terms" className="text-sm font-normal cursor-pointer">
+                  {t('landing.modal.termsPrefix', 'I accept the')}{' '}
+                  <a
+                    href="/terms-of-service"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-600 hover:text-brand-700 underline"
+                  >
+                    {t('landing.modal.termsLink', 'Terms of Service')}
+                  </a>
+                </Label>
+              </div>
+            )}
+
             <Button
               type="submit"
               className="w-full bg-brand-600 hover:bg-brand-700 text-white"
               disabled={isSubmittingLead}
             >
-              {isSubmittingLead ? t('landing.modal.submitting', 'Sending...') : t('landing.modal.submit', 'Submit Request')}
+              {isSubmittingLead
+                ? t('landing.modal.submitting', 'Creating Account...')
+                : activeCta === 'trial'
+                  ? t('landing.modal.createAccount', 'Create Account')
+                  : t('landing.modal.submit', 'Submit Request')
+              }
             </Button>
-            <p className="text-xs text-gray-500 text-center">
-              {t('landing.modal.responseTime', 'We respond within one business day. By submitting, you agree to be contacted about Ops-log.')}
-            </p>
+
+            {activeCta === 'subscription' && (
+              <p className="text-xs text-gray-500 text-center">
+                {t('landing.modal.responseTime', 'We respond within one business day. By submitting, you agree to be contacted about Ops-log.')}
+              </p>
+            )}
           </form>
         </DialogContent>
       </Dialog>
