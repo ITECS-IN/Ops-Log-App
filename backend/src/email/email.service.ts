@@ -43,7 +43,7 @@ export class EmailService {
   async sendLeadNotification(lead: Lead) {
     await this.send({
       to: this.notificationsRecipient,
-      subject: `New Shift Log lead: ${lead.fullName}`,
+      subject: `New Ops-log lead: ${lead.fullName}`,
       text: this.buildLeadText(lead),
       html: this.buildLeadHtml(lead),
     });
@@ -72,7 +72,7 @@ export class EmailService {
   private buildLeadText(lead: Lead) {
     const submitted = this.resolveSubmittedAt(lead).toISOString();
     return [
-      'A new lead was captured from the Shift Log landing page.',
+      'A new lead was captured from the Ops-log landing page.',
       `Name: ${lead.fullName}`,
       `Email: ${lead.email}`,
       `Company: ${lead.company ?? 'N/A'}`,
@@ -88,7 +88,7 @@ export class EmailService {
   private buildLeadHtml(lead: Lead) {
     const submitted = this.resolveSubmittedAt(lead).toLocaleString();
     return `
-      <p>A new lead was captured from the Shift Log landing page.</p>
+      <p>A new lead was captured from the Ops-log landing page.</p>
       <ul>
         <li><strong>Name:</strong> ${lead.fullName}</li>
         <li><strong>Email:</strong> ${lead.email}</li>

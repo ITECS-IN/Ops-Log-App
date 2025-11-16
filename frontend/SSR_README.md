@@ -1,6 +1,6 @@
-# Shift Log - Server-Side Rendering (SSR) Setup
+# Ops-log - Server-Side Rendering (SSR) Setup
 
-This document explains the SSR implementation for the Shift Log marketing landing page.
+This document explains the SSR implementation for the Ops-log marketing landing page.
 
 ## Overview
 

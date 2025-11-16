@@ -25,7 +25,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const { t } = useLanguage();
   const { company, loading } = useCompany();
   const title = useMemo(
-    () => t(PAGE_TITLES[location.pathname] || "layout.defaultTitle", "Shift Log App"),
+    () => t(PAGE_TITLES[location.pathname] || "layout.defaultTitle", "Ops-log App"),
     [location.pathname, t]
   );
 

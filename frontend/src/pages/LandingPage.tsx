@@ -64,7 +64,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     // Set page title and meta description for SEO
-    document.title = 'Shift Log - Manufacturing Operations Management Platform';
+    document.title = 'Ops-log - Manufacturing Operations Management Platform';
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 'Real-time manufacturing floor management system for tracking machine operations, downtime events, and operator activities. Optimize production efficiency with advanced analytics.');
@@ -136,7 +136,7 @@ export default function LandingPage() {
             <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
               <AppLogo size={32} className="sm:block md:hidden" />
               <AppLogo size={40} className="hidden sm:block" />
-              <span className="text-lg sm:text-2xl font-bold text-gray-900">Shift Log</span>
+              <span className="text-lg sm:text-2xl font-bold text-gray-900">Ops-log</span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -300,7 +300,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-12 md:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
-              {t('landing.benefits.title', 'Why Choose Shift Log?')}
+              {t('landing.benefits.title', 'Why Choose Ops-log?')}
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 px-4">
               {t('landing.benefits.subtitle', 'Enterprise-grade features for manufacturing excellence')}
@@ -702,7 +702,7 @@ export default function LandingPage() {
               <div className="flex items-center space-x-2 mb-4">
                 <AppLogo size={32} className="sm:block md:hidden" />
                 <AppLogo size={40} className="hidden sm:block" />
-                <span className="text-base sm:text-xl font-bold text-white">Shift Log</span>
+                <span className="text-base sm:text-xl font-bold text-white">Ops-log</span>
               </div>
               <p className="text-xs sm:text-sm">
                 {t('landing.footer.description', 'Manufacturing operations management platform for real-time production visibility.')}
@@ -741,7 +741,7 @@ export default function LandingPage() {
 
           <div className="border-t border-gray-800 mt-8 sm:mt-12 pt-6 sm:pt-8 text-xs sm:text-sm text-center">
             <p className="px-4">
-              &copy; 2024 Shift Log. {t('landing.footer.copyright', 'All rights reserved. Built with React, NestJS, MongoDB, and Firebase.')}
+              &copy; 2024 Ops-log. {t('landing.footer.copyright', 'All rights reserved. Built with React, NestJS, MongoDB, and Firebase.')}
             </p>
           </div>
         </div>
@@ -830,7 +830,7 @@ export default function LandingPage() {
               {isSubmittingLead ? t('landing.modal.submitting', 'Sending...') : t('landing.modal.submit', 'Submit Request')}
             </Button>
             <p className="text-xs text-gray-500 text-center">
-              {t('landing.modal.responseTime', 'We respond within one business day. By submitting, you agree to be contacted about Shift Log.')}
+              {t('landing.modal.responseTime', 'We respond within one business day. By submitting, you agree to be contacted about Ops-log.')}
             </p>
           </form>
         </DialogContent>

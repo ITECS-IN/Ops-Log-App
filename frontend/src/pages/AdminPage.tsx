@@ -8,7 +8,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminPage() {
   useEffect(() => {
-    document.title = "Admin | Shift Log";
+    document.title = "Admin | Ops-log";
   }, []);
   const [tab, setTab] = useState("lines");
   const { t } = useLanguage();

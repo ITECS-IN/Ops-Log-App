@@ -19,7 +19,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminSettings() {
   useEffect(() => {
-    document.title = "Admin Settings | Shift Log";
+    document.title = "Admin Settings | Ops-log";
   }, []);
 
   const { company, loading: contextLoading, refresh } = useCompany();

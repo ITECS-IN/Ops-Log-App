@@ -9,7 +9,7 @@ import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 
 export default function Signup() {
   useEffect(() => {
-    document.title = "Signup | Shift Log";
+    document.title = "Signup | Ops-log";
   }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,7 +47,7 @@ export default function Signup() {
           <AppLogo size={48} className="sm:hidden" />
           <AppLogo size={64} className="hidden sm:block" />
         </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-center text-primary tracking-tight">{t('common.createAccountCta', 'Create your Shift Log account')}</h2>
+        <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-center text-primary tracking-tight">{t('common.createAccountCta', 'Create your Ops-log account')}</h2>
         <p className="text-center text-muted-foreground mb-2 text-xs sm:text-sm">{t('common.createAccountSubtitle', 'Sign up to get started')}</p>
         <div className="space-y-3 sm:space-y-4">
           <input

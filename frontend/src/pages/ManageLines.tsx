@@ -3,7 +3,7 @@ import ManageLinesMachines from "./ManageLinesMachines";
 
 export function ManageLines() {
   useEffect(() => {
-    document.title = "Manage Lines | Shift Log";
+    document.title = "Manage Lines | Ops-log";
   }, []);
   // Just render the lines section from ManageLinesMachines
   return <ManageLinesMachines section="lines" />;

@@ -12,7 +12,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export default function Dashboard() {
   useEffect(() => {
-    document.title = "Dashboard | Shift Log";
+    document.title = "Dashboard | Ops-log";
   }, []);
   const [addLogOpen, setAddLogOpen] = useState(false);
   const [editLog, setEditLog] = useState<any | null>(null);

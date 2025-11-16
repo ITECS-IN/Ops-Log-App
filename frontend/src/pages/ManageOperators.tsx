@@ -17,7 +17,7 @@ export interface Operator {
 
 const ManageOperators: React.FC = () => {
   useEffect(() => {
-    document.title = "Manage Operators | Shift Log";
+    document.title = "Manage Operators | Ops-log";
   }, []);
 
   const [operators, setOperators] = useState<Operator[]>([]);

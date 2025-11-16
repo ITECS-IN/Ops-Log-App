@@ -12,7 +12,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export default function ManageLinesMachines({ section }: { section?: 'lines' | 'machines' }) {
   useEffect(() => {
-    document.title = "Manage Lines & Machines | Shift Log";
+    document.title = "Manage Lines & Machines | Ops-log";
   }, []);
   const { lines, machines, error, refetch } = useLinesMachines();
   const { t } = useLanguage();

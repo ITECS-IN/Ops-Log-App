@@ -22,8 +22,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
-    .setTitle('Shift Log API')
-    .setDescription('API documentation for the Shift Log backend')
+    .setTitle('Ops-log API')
+    .setDescription('API documentation for the Ops-log backend')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);

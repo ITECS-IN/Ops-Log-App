@@ -43,7 +43,7 @@ To receive an email at `itechlicense@outlook.com` every time a landing-page lead
 | --- | --- |
 | `EMAIL_HOST`, `EMAIL_PORT` | SMTP server host and port (465 implies TLS). |
 | `EMAIL_USER`, `EMAIL_PASS` | Login credentials for the SMTP server. |
-| `EMAIL_FROM` | Display name/address for outgoing notifications, e.g. `"Shift Log" <no-reply@shiftlog.com>`. |
+| `EMAIL_FROM` | Display name/address for outgoing notifications, e.g. `"Ops-log" <no-reply@ops-log.com>`. |
 | `LEAD_NOTIFICATION_TO` | Destination mailbox. Defaults to `itechlicense@outlook.com` if omitted. |
 
 If any of the SMTP variables are missing the backend will skip sending mail but continue storing leads.

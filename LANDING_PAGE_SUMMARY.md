@@ -1,8 +1,8 @@
-# Shift Log - Marketing Landing Page Implementation
+# Ops-log - Marketing Landing Page Implementation
 
 ## Overview
 
-A modern, SEO-optimized marketing landing page with Server-Side Rendering (SSR) has been successfully created for the Shift Log application. All content is sourced from the comprehensive documentation in the `/docs` folder.
+A modern, SEO-optimized marketing landing page with Server-Side Rendering (SSR) has been successfully created for the Ops-log application. All content is sourced from the comprehensive documentation in the `/docs` folder.
 
 ## What Was Created
 
@@ -211,7 +211,7 @@ Edit `/frontend/src/pages/LandingPage.tsx`:
 - Line 454-469: Pricing section CTAs
 
 ### Update Email for Subscription:
-Line 462: Change `href="mailto:sales@shiftlog.com..."`
+Line 462: Change `href="mailto:sales@ops-log.com..."`
 
 ### Update Content:
 All content is hard-coded from the docs. To update:

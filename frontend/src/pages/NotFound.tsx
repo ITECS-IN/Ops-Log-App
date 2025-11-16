@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export default function NotFound() {
   useEffect(() => {
-    document.title = "404 Not Found | Shift Log";
+    document.title = "404 Not Found | Ops-log";
   }, []);
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-muted">
