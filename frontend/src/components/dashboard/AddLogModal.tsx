@@ -1,7 +1,23 @@
 
-import { useState, useEffect } from "react";
-import { Dialog as PreviewDialog, DialogContent as PreviewDialogContent } from "@/components/ui/dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect, useRef } from "react";
+import {
+  Dialog as PreviewDialog,
+  DialogContent as PreviewDialogContent,
+} from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Dialog as CameraDialog,
+  DialogContent as CameraDialogContent,
+  DialogHeader as CameraDialogHeader,
+  DialogTitle as CameraDialogTitle,
+  DialogDescription as CameraDialogDescription,
+  DialogFooter as CameraDialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import api from "@/lib/axios";
@@ -165,17 +181,182 @@ export function AddLogModal({
   const [fileUploading, setFileUploading] = useState(false);
   const [filePreview, setFilePreview] = useState<string>("");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [cameraSupported, setCameraSupported] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraMode, setCameraMode] = useState<"photo" | "video">("photo");
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraLoading, setCameraLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  const recordingStopActionRef = useRef<"save" | "discard">("save");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     handleChange("photo", file);
+    handleChange("fileUrl", "");
     setFilePreview("");
     if (file.type.startsWith("image/")) {
       setFilePreview(URL.createObjectURL(file));
     } else if (file.type.startsWith("video/")) {
-      setFilePreview(""); // will show video preview after upload
+      setFilePreview(URL.createObjectURL(file));
     }
+  };
+
+  useEffect(() => {
+    setCameraSupported(
+      typeof navigator !== "undefined" &&
+        !!navigator.mediaDevices &&
+        typeof navigator.mediaDevices.getUserMedia === "function",
+    );
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const setupCamera = async () => {
+      if (!cameraOpen) return;
+      if (
+        typeof navigator === "undefined" ||
+        !navigator.mediaDevices?.getUserMedia
+      ) {
+        setCameraError(
+          t(
+            "addLog.media.cameraUnsupported",
+            "Camera is not supported in this browser.",
+          ),
+        );
+        return;
+      }
+      setCameraLoading(true);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: cameraMode === "video",
+        });
+        if (!mounted) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        mediaStreamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play().catch(() => undefined);
+        }
+        setCameraError(null);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : t("addLog.media.cameraUnavailable", "Unable to access camera.");
+        setCameraError(message);
+      } finally {
+        setCameraLoading(false);
+      }
+    };
+
+    if (cameraOpen) {
+      setupCamera();
+    } else {
+      setIsRecording(false);
+      recordedChunksRef.current = [];
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.ondataavailable = null;
+        mediaRecorderRef.current = null;
+      }
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+    }
+
+    return () => {
+      mounted = false;
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+    };
+  }, [cameraOpen, cameraMode, t]);
+
+  const handleCapturedMedia = (file: File, previewUrl: string) => {
+    handleChange("photo", file);
+    handleChange("fileUrl", "");
+    setFilePreview(previewUrl);
+    setCameraOpen(false);
+    setIsRecording(false);
+    recordedChunksRef.current = [];
+    mediaRecorderRef.current = null;
+  };
+
+  const handleCapturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 640;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `log-photo-${Date.now()}.png`, {
+          type: "image/png",
+        });
+        const previewUrl = URL.createObjectURL(blob);
+        handleCapturedMedia(file, previewUrl);
+      },
+      "image/png",
+      0.92,
+    );
+  };
+
+  const startRecording = () => {
+    if (!mediaStreamRef.current || isRecording) return;
+    recordedChunksRef.current = [];
+    const recorder = new MediaRecorder(mediaStreamRef.current, {
+      mimeType: "video/webm",
+    });
+    mediaRecorderRef.current = recorder;
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunksRef.current.push(event.data);
+      }
+    };
+    recorder.onstop = () => {
+      const shouldSave = recordingStopActionRef.current === "save";
+      setIsRecording(false);
+      if (shouldSave && recordedChunksRef.current.length) {
+        const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+        const file = new File([blob], `log-video-${Date.now()}.webm`, {
+          type: "video/webm",
+        });
+        const previewUrl = URL.createObjectURL(blob);
+        handleCapturedMedia(file, previewUrl);
+      } else {
+        recordedChunksRef.current = [];
+      }
+      recordingStopActionRef.current = "save";
+    };
+    recorder.start();
+    setIsRecording(true);
+  };
+
+  const stopRecording = (save = true) => {
+    if (!isRecording || !mediaRecorderRef.current) return;
+    recordingStopActionRef.current = save ? "save" : "discard";
+    mediaRecorderRef.current.stop();
+  };
+
+  const handleCameraOpenChange = (value: boolean) => {
+    if (!value && isRecording) {
+      stopRecording(false);
+    }
+    setCameraOpen(value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -379,11 +560,47 @@ export function AddLogModal({
               onChange={handleFileChange}
               disabled={fileUploading || isEdit}
             />
+            {cameraSupported && (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setCameraMode("photo");
+                    setCameraOpen(true);
+                  }}
+                  disabled={fileUploading || isEdit}
+                >
+                  {t('addLog.media.capturePhoto', 'Capture Photo')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setCameraMode("video");
+                    setCameraOpen(true);
+                  }}
+                  disabled={fileUploading || isEdit}
+                >
+                  {t('addLog.media.recordVideo', 'Record Video')}
+                </Button>
+              </div>
+            )}
             {fileUploading && <span className="text-xs text-primary">{t('common.uploading', 'Uploading...')}</span>}
             {filePreview && form.photo && form.photo.type.startsWith("image/") && (
               <img
                 src={filePreview}
                 alt="preview"
+                className="h-24 mt-2 rounded border object-contain cursor-pointer"
+                onClick={() => setPreviewOpen(true)}
+              />
+            )}
+            {filePreview && form.photo && form.photo.type.startsWith("video/") && (
+              <video
+                src={filePreview}
+                controls
                 className="h-24 mt-2 rounded border object-contain cursor-pointer"
                 onClick={() => setPreviewOpen(true)}
               />
@@ -420,6 +637,9 @@ export function AddLogModal({
                   if (filePreview && form.photo && form.photo.type.startsWith("image/")) {
                     return <img src={filePreview} alt="preview-large" className="max-h-[70vh] max-w-full rounded border object-contain" />;
                   }
+                  if (filePreview && form.photo && form.photo.type.startsWith("video/")) {
+                    return <video src={filePreview} controls autoPlay className="max-h-[70vh] max-w-full rounded border object-contain" />;
+                  }
                   // Show video if available
                   if (form.fileUrl && ((form.photo && form.photo.type.startsWith("video/")) || form.fileUrl.endsWith('.mp4') || form.fileUrl.endsWith('.webm'))) {
                     return <video src={form.fileUrl} controls autoPlay className="max-h-[70vh] max-w-full rounded border object-contain" />;
@@ -432,6 +652,94 @@ export function AddLogModal({
                 })()}
               </PreviewDialogContent>
             </PreviewDialog>
+            <CameraDialog open={cameraOpen} onOpenChange={handleCameraOpenChange}>
+              <CameraDialogContent className="sm:max-w-lg">
+                <CameraDialogHeader>
+                  <CameraDialogTitle>
+                    {cameraMode === "photo"
+                      ? t("addLog.media.dialogTitlePhoto", "Capture Photo")
+                      : t("addLog.media.dialogTitleVideo", "Record Video")}
+                  </CameraDialogTitle>
+                  <CameraDialogDescription>
+                    {cameraMode === "photo"
+                      ? t("addLog.media.photoDescription", "Align your subject and capture a still image.")
+                      : t("addLog.media.videoDescription", "Use the controls below to record a short clip.")}
+                  </CameraDialogDescription>
+                </CameraDialogHeader>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={cameraMode === "photo" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCameraMode("photo")}
+                      disabled={cameraMode === "photo"}
+                    >
+                      {t("addLog.media.photoMode", "Photo")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={cameraMode === "video" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCameraMode("video")}
+                      disabled={cameraMode === "video"}
+                    >
+                      {t("addLog.media.videoMode", "Video")}
+                    </Button>
+                  </div>
+                  <div className="aspect-video w-full rounded-lg bg-black/80 flex items-center justify-center overflow-hidden">
+                    {cameraError ? (
+                      <p className="text-sm text-red-500 p-4 text-center">{cameraError}</p>
+                    ) : (
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-contain"
+                      />
+                    )}
+                  </div>
+                  {cameraLoading && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      {t("addLog.media.initializing", "Initializing camera...")}
+                    </p>
+                  )}
+                  {cameraMode === "video" && isRecording && (
+                    <p className="text-xs text-red-500 text-center">
+                      {t("addLog.media.recording", "Recording...")}
+                    </p>
+                  )}
+                </div>
+                <CameraDialogFooter className="gap-2">
+                  <Button type="button" variant="outline" onClick={() => handleCameraOpenChange(false)}>
+                    {t("common.cancel", "Cancel")}
+                  </Button>
+                  {cameraMode === "photo" ? (
+                    <Button
+                      type="button"
+                      onClick={handleCapturePhoto}
+                      disabled={!!cameraError || cameraLoading}
+                    >
+                      {t("addLog.media.capturePhoto", "Capture Photo")}
+                    </Button>
+                  ) : isRecording ? (
+                    <Button type="button" variant="destructive" onClick={() => stopRecording()}>
+                      {t("addLog.media.stopRecording", "Stop Recording")}
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={startRecording}
+                      disabled={!!cameraError || cameraLoading}
+                    >
+                      {t("addLog.media.startRecording", "Start Recording")}
+                    </Button>
+                  )}
+                </CameraDialogFooter>
+                <canvas ref={canvasRef} className="hidden" />
+              </CameraDialogContent>
+            </CameraDialog>
           </div>
           <div className="flex justify-end mt-2">
             <Button type="submit" className="w-full sm:w-auto h-9 px-6 text-sm font-medium bg-black text-white rounded" disabled={fileUploading}>
