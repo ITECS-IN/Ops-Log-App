@@ -53,6 +53,7 @@ export class AppModule {
         { path: '/dashboard/*', method: RequestMethod.ALL },
         { path: '/company', method: RequestMethod.ALL },
         { path: '/analytics/*', method: RequestMethod.ALL },
+        { path: '/auth/change-password', method: RequestMethod.PUT },
       );
   }
 }

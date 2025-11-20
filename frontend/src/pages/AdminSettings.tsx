@@ -43,6 +43,12 @@ export default function AdminSettings() {
   const [reportEmails, setReportEmails] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
   // Sync state from context when company changes
   useEffect(() => {
     if (company) {
@@ -220,6 +226,40 @@ export default function AdminSettings() {
     );
   };
 
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      toast.error(t('admin.settings.password.allFieldsRequired', 'All password fields are required'));
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      toast.error(t('admin.settings.password.passwordsDoNotMatch', 'New passwords do not match'));
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error(t('admin.settings.password.minLength', 'New password must be at least 6 characters'));
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await api.put('/auth/change-password', {
+        currentPassword,
+        newPassword,
+      });
+      toast.success(t('admin.settings.password.success', 'Password updated successfully'));
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch (error: any) {
+      const message = error?.response?.data?.message || t('admin.settings.password.error', 'Failed to update password');
+      toast.error(message);
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   return (
     <div className="py-4 md:py-8 mx-auto">
       <Card>
@@ -352,6 +392,55 @@ export default function AdminSettings() {
             className="mt-2"
           >
             {loading || contextLoading ? t('common.saving', 'Saving...') : t('common.saveSettings', 'Save Settings')}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">{t('admin.settings.password.title', 'Change Password')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <Label htmlFor="currentPassword">{t('admin.settings.password.current', 'Current Password')}</Label>
+            <Input
+              id="currentPassword"
+              type="password"
+              placeholder={t('admin.settings.password.enterCurrent', 'Enter current password')}
+              value={currentPassword}
+              onChange={e => setCurrentPassword(e.target.value)}
+              disabled={passwordLoading}
+            />
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="newPassword">{t('admin.settings.password.new', 'New Password')}</Label>
+            <Input
+              id="newPassword"
+              type="password"
+              placeholder={t('admin.settings.password.enterNew', 'Enter new password (min 6 characters)')}
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              disabled={passwordLoading}
+            />
+          </div>
+          <div className="mb-4">
+            <Label htmlFor="confirmNewPassword">{t('admin.settings.password.confirm', 'Confirm New Password')}</Label>
+            <Input
+              id="confirmNewPassword"
+              type="password"
+              placeholder={t('admin.settings.password.confirmNew', 'Re-enter new password')}
+              value={confirmNewPassword}
+              onChange={e => setConfirmNewPassword(e.target.value)}
+              disabled={passwordLoading}
+            />
+          </div>
+          <Button
+            type="button"
+            onClick={handleChangePassword}
+            disabled={passwordLoading}
+            className="mt-2"
+          >
+            {passwordLoading ? t('admin.settings.password.updating', 'Updating...') : t('admin.settings.password.update', 'Update Password')}
           </Button>
         </CardContent>
       </Card>
