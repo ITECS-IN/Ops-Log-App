@@ -49,6 +49,42 @@ export class EmailService {
     });
   }
 
+  async sendUserWelcomeEmail(options: {
+    to: string;
+    temporaryPassword: string;
+    companyName: string;
+    role: 'admin' | 'user';
+  }) {
+    const subject = `Welcome to ${options.companyName} on Ops-log`;
+    const textPart = this.buildWelcomeText(options);
+    const htmlPart = this.buildWelcomeHtml(options);
+
+    await this.send({
+      to: options.to,
+      subject,
+      textPart,
+      htmlPart,
+    });
+  }
+
+  async sendUserPasswordResetEmail(options: {
+    to: string;
+    temporaryPassword: string;
+    companyName: string;
+    role: 'admin' | 'user';
+  }) {
+    const subject = `Your Ops-log password was reset`;
+    const textPart = this.buildResetText(options);
+    const htmlPart = this.buildResetHtml(options);
+
+    await this.send({
+      to: options.to,
+      subject,
+      textPart,
+      htmlPart,
+    });
+  }
+
   private async send(options: {
     to: string;
     subject: string;
@@ -175,5 +211,118 @@ export class EmailService {
       return new Date();
     }
     return createdAt instanceof Date ? createdAt : new Date(createdAt);
+  }
+
+  private buildWelcomeText(options: {
+    to: string;
+    temporaryPassword: string;
+    companyName: string;
+    role: 'admin' | 'user';
+  }) {
+    return [
+      `Welcome to Ops-log!`,
+      ``,
+      `You've been added as a ${options.role} in ${options.companyName}.`,
+      `Use the temporary password below to sign in for the first time:`,
+      ``,
+      `Email: ${options.to}`,
+      `Temporary password: ${options.temporaryPassword}`,
+      ``,
+      `For security, please log in and change your password right away from the profile menu.`,
+      `If you weren't expecting this invitation, contact your Ops-log administrator.`,
+    ].join('\n');
+  }
+
+  private buildWelcomeHtml(options: {
+    to: string;
+    temporaryPassword: string;
+    companyName: string;
+    role: 'admin' | 'user';
+  }) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background: #f9fafb; color: #111827; }
+          .container { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
+          .card { background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+          .cta { display: inline-block; padding: 12px 20px; background: #2563eb; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px; }
+          .credentials { background: #f3f4f6; border-radius: 8px; padding: 16px; margin: 20px 0; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="card">
+            <h2>Welcome to Ops-log!</h2>
+            <p>You've been added as a <strong>${options.role}</strong> for <strong>${options.companyName}</strong>.</p>
+            <p>Use the temporary credentials below to sign in and then update your password from the profile menu.</p>
+            <div class="credentials">
+              <div><strong>Email:</strong> ${options.to}</div>
+              <div><strong>Temporary password:</strong> ${options.temporaryPassword}</div>
+            </div>
+            <p>If you didn't expect this email, please reach out to your Ops-log administrator.</p>
+            <p style="margin-bottom: 0;">— The Ops-log Team</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  private buildResetText(options: {
+    to: string;
+    temporaryPassword: string;
+    companyName: string;
+    role: 'admin' | 'user';
+  }) {
+    return [
+      `Your Ops-log password was reset.`,
+      ``,
+      `Company: ${options.companyName}`,
+      `Role: ${options.role}`,
+      ``,
+      `Use this temporary password to sign in, then update it from your profile settings:`,
+      `Email: ${options.to}`,
+      `Temporary password: ${options.temporaryPassword}`,
+      ``,
+      `If you did not request this change, contact your Ops-log administrator immediately.`,
+    ].join('\n');
+  }
+
+  private buildResetHtml(options: {
+    to: string;
+    temporaryPassword: string;
+    companyName: string;
+    role: 'admin' | 'user';
+  }) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background: #f9fafb; color: #111827; }
+          .container { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
+          .card { background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+          .credentials { background: #f3f4f6; border-radius: 8px; padding: 16px; margin: 20px 0; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="card">
+            <h2>Your Ops-log password was reset</h2>
+            <p>You can now sign back in as <strong>${options.role}</strong> for <strong>${options.companyName}</strong>.</p>
+            <p>Use the temporary credentials below, then change your password from the profile menu.</p>
+            <div class="credentials">
+              <div><strong>Email:</strong> ${options.to}</div>
+              <div><strong>Temporary password:</strong> ${options.temporaryPassword}</div>
+            </div>
+            <p>If you didn't request this, notify your Ops-log administrator immediately.</p>
+            <p style="margin-bottom: 0;">— The Ops-log Team</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
   }
 }

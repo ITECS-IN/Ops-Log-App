@@ -1,4 +1,13 @@
-import { Body, Controller, Post, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -9,6 +18,35 @@ export class AuthController {
   async signup(@Body() body: any) {
     // body: { email, password, companyName }
     return this.authService.signup(body);
+  }
+
+  @Post('users')
+  async createUser(@Body() body: any, @Req() req: any) {
+    return this.authService.createUser(req.user, body);
+  }
+
+  @Get('users')
+  async listUsers(@Req() req: any) {
+    return this.authService.listUsers(req.user);
+  }
+
+  @Put('users/:uid')
+  async updateUser(
+    @Param('uid') uid: string,
+    @Body() body: any,
+    @Req() req: any,
+  ) {
+    return this.authService.updateUser(req.user, uid, body);
+  }
+
+  @Delete('users/:uid')
+  async deleteUser(@Param('uid') uid: string, @Req() req: any) {
+    return this.authService.deleteUser(req.user, uid);
+  }
+
+  @Post('users/:uid/reset-password')
+  async resetUserPassword(@Param('uid') uid: string, @Req() req: any) {
+    return this.authService.resetUserPassword(req.user, uid);
   }
 
   @Put('change-password')

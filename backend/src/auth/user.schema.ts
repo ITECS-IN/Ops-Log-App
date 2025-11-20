@@ -14,6 +14,18 @@ export class User extends Document {
 
   @Prop({ default: false })
   admin: boolean;
+
+  @Prop({ enum: ['admin', 'user'], default: 'user' })
+  role: 'admin' | 'user';
+
+  @Prop({ default: false })
+  disabled: boolean;
+
+  @Prop({ type: Date, default: null })
+  deletedAt?: Date | null;
+
+  @Prop()
+  employeeCode?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

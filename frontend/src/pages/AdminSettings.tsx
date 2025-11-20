@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useCompany } from "@/context/useCompany";
 import { useLanguage } from "@/context/LanguageContext";
 
+
 export default function AdminSettings() {
   useEffect(() => {
     document.title = "Admin Settings | Ops-log";
@@ -261,7 +262,7 @@ export default function AdminSettings() {
   };
 
   return (
-    <div className="py-4 md:py-8 mx-auto">
+    <div className="py-4 md:py-8 mx-auto space-y-6">
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">{t('admin.settings.title', 'Settings')}</CardTitle>
@@ -396,7 +397,7 @@ export default function AdminSettings() {
         </CardContent>
       </Card>
 
-      <Card className="mt-6">
+      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">{t('admin.settings.password.title', 'Change Password')}</CardTitle>
         </CardHeader>
@@ -444,6 +445,7 @@ export default function AdminSettings() {
           </Button>
         </CardContent>
       </Card>
+
       <Dialog open={cameraOpen} onOpenChange={setCameraOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>

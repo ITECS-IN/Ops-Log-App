@@ -3,7 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useState } from "react";
 import ManageLinesMachines from "./ManageLinesMachines";
 import AdminSettings from "./AdminSettings";
-import ManageOperators from "./ManageOperators";
+import ManageUsers from "./ManageUsers";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminPage() {
@@ -18,7 +18,7 @@ export default function AdminPage() {
         <TabsList className="w-full flex-wrap h-full">
           <TabsTrigger value="lines">{t('admin.tabs.lines', 'Lines Management')}</TabsTrigger>
           <TabsTrigger value="machines">{t('admin.tabs.machines', 'Machines Management')}</TabsTrigger>
-          <TabsTrigger value="operators">{t('admin.tabs.operators', 'Operators')}</TabsTrigger>
+          <TabsTrigger value="users">{t('admin.tabs.users', 'Add User')}</TabsTrigger>
           <TabsTrigger value="settings">{t('admin.tabs.settings', 'Settings')}</TabsTrigger>
         </TabsList>
         <TabsContent value="lines">
@@ -27,8 +27,8 @@ export default function AdminPage() {
         <TabsContent value="machines">
           <ManageLinesMachines section="machines" />
         </TabsContent>
-        <TabsContent value="operators">
-          <ManageOperators />
+        <TabsContent value="users">
+          <ManageUsers />
         </TabsContent>
         <TabsContent value="settings">
           <AdminSettings />

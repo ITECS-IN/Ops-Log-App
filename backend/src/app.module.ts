@@ -42,18 +42,24 @@ import { LeadsModule } from './leads/leads.module';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(FirebaseAuthMiddleware)
-      .forRoutes(
-        { path: '/records', method: RequestMethod.ALL },
-        { path: '/records/*', method: RequestMethod.ALL },
-        { path: '/lines', method: RequestMethod.ALL },
-        { path: '/machines', method: RequestMethod.ALL },
-        { path: '/operators', method: RequestMethod.ALL },
-        { path: '/dashboard/*', method: RequestMethod.ALL },
-        { path: '/company', method: RequestMethod.ALL },
-        { path: '/analytics/*', method: RequestMethod.ALL },
-        { path: '/auth/change-password', method: RequestMethod.PUT },
-      );
+    consumer.apply(FirebaseAuthMiddleware).forRoutes(
+      { path: '/records', method: RequestMethod.ALL },
+      { path: '/records/*', method: RequestMethod.ALL },
+      { path: '/lines', method: RequestMethod.ALL },
+      { path: '/machines', method: RequestMethod.ALL },
+      { path: '/operators', method: RequestMethod.ALL },
+      { path: '/dashboard/*', method: RequestMethod.ALL },
+      { path: '/company', method: RequestMethod.ALL },
+      { path: '/analytics/*', method: RequestMethod.ALL },
+      { path: '/auth/change-password', method: RequestMethod.PUT },
+      { path: '/auth/users', method: RequestMethod.POST },
+      { path: '/auth/users', method: RequestMethod.GET },
+      { path: '/auth/users/:uid', method: RequestMethod.PUT },
+      { path: '/auth/users/:uid', method: RequestMethod.DELETE },
+      {
+        path: '/auth/users/:uid/reset-password',
+        method: RequestMethod.POST,
+      },
+    );
   }
 }
