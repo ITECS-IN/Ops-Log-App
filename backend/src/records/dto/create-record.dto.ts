@@ -12,8 +12,8 @@ import {
 
 export class CreateRecordDto {
   @IsDefined()
-  @IsMongoId()
-  operatorId: string;
+  @IsString()
+  userId: string;
 
   @IsDefined()
   @IsMongoId()

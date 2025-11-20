@@ -46,7 +46,7 @@ export class OperatorsService {
 
   async remove(id: string) {
     // Check if any record is associated with this operator
-    const associatedRecord = await this.recordModel.findOne({ operatorId: id });
+    const associatedRecord = await this.recordModel.findOne({ userId: id });
     if (associatedRecord) {
       throw new BadRequestException(
         'Cannot delete operator: it is associated with existing records.',

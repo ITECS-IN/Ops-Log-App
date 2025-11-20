@@ -72,7 +72,7 @@ export class RecordsService {
         .find(query)
         .populate('lineId', 'lineName')
         .populate('machineId', 'machineName location')
-        // .populate('operatorId', 'name shift role')
+        // .populate('userId', 'email role employeeCode')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -91,8 +91,7 @@ export class RecordsService {
     const record = await this.recordModel
       .findOne({ _id: id, companyId })
       .populate('lineId', 'lineName')
-      .populate('machineId', 'machineName location')
-      .populate('operatorId', 'name shift role');
+      .populate('machineId', 'machineName location');
     if (!record) throw new NotFoundException('Record not found');
     return record;
   }
@@ -126,7 +125,7 @@ export class RecordsService {
       this.recordModel
         .find({ machineId, companyId })
         .populate('lineId', 'lineName')
-        // .populate('operatorId', 'name shift role')
+        // .populate('userId', 'email role employeeCode')
         .exec()
     );
   }
@@ -137,7 +136,7 @@ export class RecordsService {
       this.recordModel
         .find({ status: 'Open', companyId })
         .populate('machineId', 'machineName')
-        // .populate('operatorId', 'name')
+        // .populate('userId', 'email')
         .exec()
     );
   }

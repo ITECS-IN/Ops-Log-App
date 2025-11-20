@@ -3,14 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Record } from '../records/schemas/record.schema';
 import { MachinesService } from '../machines/machines.service';
-import { OperatorsService } from '../operators/operators.service';
+import { User } from '../auth/user.schema';
 
 @Injectable()
 export class AnalyticsService {
   constructor(
     @InjectModel(Record.name) private recordModel: Model<Record>,
     private machinesService: MachinesService,
-    private operatorsService: OperatorsService,
+    @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
   async getLogsPerMachine(
@@ -189,38 +189,36 @@ export class AnalyticsService {
   async getOperatorActivity(
     companyId: string,
   ): Promise<{ _id: string; label: string; value: number }[]> {
-    // 1. Get all operators for this company
-    const operators = (await this.operatorsService.findAll(
-      companyId,
-    )) as Array<{
-      _id: Types.ObjectId | string;
-      name: string;
-    }>;
-
     const matchCompany = {
       $or: [
         { companyId: new Types.ObjectId(companyId) },
         { companyId: companyId },
       ],
     };
-    // 2. Get log counts per operator
+    const users = await this.userModel
+      .find({
+        companyId,
+        $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }],
+      })
+      .lean();
+
     const logCounts: Array<{ _id: string; value: number }> =
       await this.recordModel.aggregate([
         { $match: matchCompany },
-        { $group: { _id: '$operatorId', value: { $sum: 1 } } },
+        { $group: { _id: '$userId', value: { $sum: 1 } } },
       ]);
 
-    // 3. Map operatorId to count
     const countMap = new Map<string, number>();
     for (const item of logCounts) {
       countMap.set(String(item._id), item.value);
     }
 
-    // 4. Return all operators with their log count (0 if none)
-    const result = operators.map((op) => ({
-      _id: String(op._id),
-      label: op.name,
-      value: countMap.get(String(op._id)) || 0,
+    const result = users.map((user) => ({
+      _id: user.uid,
+      label: user.employeeCode
+        ? `${user.employeeCode} – ${user.email}`
+        : user.email,
+      value: countMap.get(String(user.uid)) || 0,
     }));
     return result;
   }

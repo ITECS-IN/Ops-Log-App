@@ -24,10 +24,18 @@ interface Machine {
   lineId: string | { _id: string; lineName: string };
 }
 
+interface CompanyUser {
+  uid: string;
+  email: string;
+  role: string;
+  employeeCode?: string | null;
+  disabled?: boolean;
+}
+
 interface AddLogForm {
   lineId: string;
   machineId: string;
-  operatorId: string;
+  userId: string;
   shift: string;
   noteType: string;
   severity: number;
@@ -60,13 +68,13 @@ export function AddLogModal({
   editLog,
   isEdit = false,
 }: AddLogModalProps) {
-  const [operators, setOperators] = useState<{ _id: string; name: string }[]>([]);
+  const [users, setUsers] = useState<CompanyUser[]>([]);
   const { company } = useCompany();
   const { t } = useLanguage();
   const [form, setForm] = useState<AddLogForm>({
     lineId: "",
     machineId: "",
-    operatorId: "",
+    userId: "",
     shift: "A",
     noteType: "Observation",
     severity: 1,
@@ -80,7 +88,12 @@ export function AddLogModal({
   });
   useEffect(() => {
     if (open) {
-      api.get("/operators").then(res => setOperators(res.data));
+      api.get("/auth/company-users").then(res => {
+        const activeUsers: CompanyUser[] = Array.isArray(res.data)
+          ? res.data.filter((u: CompanyUser) => u.role === "user" && !u.disabled)
+          : [];
+        setUsers(activeUsers);
+      });
     }
   }, [open]);
 
@@ -93,7 +106,10 @@ export function AddLogModal({
       setForm({
         lineId: (typeof editLog.lineId === "object" && editLog.lineId !== null ? (editLog.lineId as { _id: string })._id : editLog.lineId) || "",
         machineId: (typeof editLog.machineId === "object" && editLog.machineId !== null ? (editLog.machineId as { _id: string })._id : editLog.machineId) || "",
-        operatorId: (typeof editLog.operatorId === "object" && editLog.operatorId !== null ? (editLog.operatorId as { _id: string })._id : editLog.operatorId) || "",
+        userId:
+          (typeof editLog.userId === "object" && editLog.userId !== null
+            ? (editLog.userId as { _id: string })._id
+            : editLog.userId) || "",
         shift: editLog.shift || "A",
         noteType: editLog.noteType || "Observation",
         severity: editLog.severity || 1,
@@ -122,7 +138,7 @@ export function AddLogModal({
       setForm({
         lineId: "",
         machineId: "",
-        operatorId: "",
+        userId: "",
         shift: "A",
         noteType: "Observation",
         severity: 1,
@@ -164,6 +180,10 @@ export function AddLogModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.userId) {
+      toast.error(t('addLog.validation.userRequired', 'Please select a user'));
+      return;
+    }
     let duration = 0;
     if (form.downtimeStart && form.downtimeEnd) {
       const start = new Date(form.downtimeStart).getTime();
@@ -190,7 +210,7 @@ export function AddLogModal({
     const payload: Partial<AddLogForm> = {
       lineId: form.lineId,
       machineId: form.machineId,
-      operatorId: form.operatorId,
+      userId: form.userId,
       shift: form.shift,
       noteType: form.noteType,
       severity: form.severity,
@@ -233,11 +253,17 @@ export function AddLogModal({
               />
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.operator', 'Operator')}</Label>
-              <Select value={form.operatorId} onValueChange={v => handleChange("operatorId", v)} disabled={isEdit}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t('addLog.placeholders.operator', 'Select operator')} /></SelectTrigger>
+              <Label className="text-xs mb-1 font-medium">{t('addLog.fields.operator', 'User')}</Label>
+              <Select value={form.userId} onValueChange={v => handleChange("userId", v)} disabled={isEdit}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder={t('addLog.placeholders.operator', 'Select user')} />
+                </SelectTrigger>
                 <SelectContent>
-                  {operators.map(op => <SelectItem key={op._id} value={op._id} className="text-sm">{op.name}</SelectItem>)}
+                  {users.map(user => (
+                    <SelectItem key={user.uid} value={user.uid} className="text-sm">
+                      {user.employeeCode ? `${user.employeeCode} – ${user.email}` : user.email}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -3,8 +3,8 @@ import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Record extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'Operator', required: true })
-  operatorId: Types.ObjectId;
+  @Prop({ type: String, required: true })
+  userId: string;
 
   @Prop({ type: Date, default: Date.now })
   dateTime: Date;

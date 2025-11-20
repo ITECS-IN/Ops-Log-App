@@ -60,6 +60,7 @@ export class AppModule {
         path: '/auth/users/:uid/reset-password',
         method: RequestMethod.POST,
       },
+      { path: '/auth/company-users', method: RequestMethod.GET },
     );
   }
 }

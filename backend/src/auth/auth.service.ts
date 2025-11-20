@@ -301,9 +301,31 @@ export class AuthService {
           admin: user.admin,
           disabled: user.disabled ?? false,
           deletedAt: user.deletedAt ?? null,
-          employeeCode: user.employeeCode ?? null,
+          employeeCode: user.employeeCode,
         }),
       );
+  }
+
+  async listCompanyUsers(companyId: string) {
+    const users = await this.userModel
+      .find({
+        companyId,
+        $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }],
+        disabled: { $ne: true },
+      })
+      .lean();
+
+    return users.map((user) =>
+      this.formatUserResponse({
+        uid: user.uid,
+        email: user.email,
+        role: user.role,
+        admin: user.admin,
+        disabled: user.disabled ?? false,
+        employeeCode: user.employeeCode,
+        deletedAt: user.deletedAt ?? null,
+      }),
+    );
   }
 
   async updateUser(

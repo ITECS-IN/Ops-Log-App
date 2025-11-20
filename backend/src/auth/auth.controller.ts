@@ -9,6 +9,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { CompanyId } from './company-id.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -28,6 +29,11 @@ export class AuthController {
   @Get('users')
   async listUsers(@Req() req: any) {
     return this.authService.listUsers(req.user);
+  }
+
+  @Get('company-users')
+  async listCompanyUsers(@CompanyId() companyId: string) {
+    return this.authService.listCompanyUsers(companyId);
   }
 
   @Put('users/:uid')
