@@ -16,6 +16,7 @@ import api from "@/lib/axios";
 import { toast } from "sonner";
 import { useCompany } from "@/context/useCompany";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAdmin } from "@/hooks/useAdmin";
 
 
 export default function AdminSettings() {
@@ -136,11 +137,17 @@ export default function AdminSettings() {
     };
   }, [cameraOpen]);
 
+  const { isAdmin, claimsChecked } = useAdmin();
+  const companyEditingDisabled = !claimsChecked || !isAdmin;
+  const showReadOnlyNotice = claimsChecked && !isAdmin;
+
   const handleShiftChange = (idx: number, field: 'name' | 'start' | 'end', value: string) => {
+    if (!isAdmin) return;
     setShiftTimings(prev => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s));
   };
 
   const handleSave = async () => {
+    if (!isAdmin) return;
     setLoading(true);
     try {
       // Only send non-empty shifts, max 3
@@ -162,6 +169,7 @@ export default function AdminSettings() {
   };
 
   const uploadLogoFile = async (file: File) => {
+    if (!isAdmin) return;
     setLogoUploading(true);
     try {
       const formData = new FormData();
@@ -178,12 +186,14 @@ export default function AdminSettings() {
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isAdmin) return;
     const file = e.target.files?.[0];
     if (file) uploadLogoFile(file);
   };
 
   const handleLogoDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    if (!isAdmin) return;
     setDragActive(false);
     const file = e.dataTransfer.files?.[0];
     if (file) uploadLogoFile(file);
@@ -191,19 +201,23 @@ export default function AdminSettings() {
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    if (!isAdmin) return;
     setDragActive(true);
   };
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    if (!isAdmin) return;
     setDragActive(false);
   };
 
   const handleRemoveLogo = () => {
+    if (!isAdmin) return;
     setCompanyLogoUrl("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleCaptureFromCamera = () => {
+    if (!isAdmin) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
@@ -268,10 +282,15 @@ export default function AdminSettings() {
           <CardTitle className="text-lg">{t('admin.settings.title', 'Settings')}</CardTitle>
         </CardHeader>
         <CardContent>
+          {showReadOnlyNotice && (
+            <div className="mb-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              {t('admin.settings.readonlyNotice', 'Only administrators can modify company settings.')}
+            </div>
+          )}
           <div className="mb-4">
             <Label>{t('common.companyLogo', 'Company Logo')}</Label>
             <div
-              className={`flex flex-col md:flex-row md:items-center gap-4 p-4 border-2 rounded-lg transition-all ${dragActive ? 'border-primary bg-primary/10' : 'border-dashed border-muted-foreground/30 bg-muted/30'}`}
+              className={`flex flex-col md:flex-row md:items-center gap-4 p-4 border-2 rounded-lg transition-all ${dragActive ? 'border-primary bg-primary/10' : 'border-dashed border-muted-foreground/30 bg-muted/30'} ${companyEditingDisabled ? 'opacity-60 cursor-not-allowed' : ''}`}
               onDrop={handleLogoDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -290,7 +309,7 @@ export default function AdminSettings() {
                   </div>
                 )}
                 {companyLogoUrl && (
-                  <Button type="button" size="sm" variant="outline" onClick={handleRemoveLogo} disabled={logoUploading || loading} className="mt-1">
+                  <Button type="button" size="sm" variant="outline" onClick={handleRemoveLogo} disabled={logoUploading || loading || companyEditingDisabled} className="mt-1">
                     {t('common.remove', 'Remove')}
                   </Button>
                 )}
@@ -301,7 +320,7 @@ export default function AdminSettings() {
                   accept="image/*"
                   ref={fileInputRef}
                   onChange={handleLogoChange}
-                  disabled={logoUploading || loading}
+                  disabled={logoUploading || loading || companyEditingDisabled}
                   className="max-w-xs"
                 />
                 <div className="text-xs text-muted-foreground">
@@ -313,7 +332,7 @@ export default function AdminSettings() {
                     variant="secondary"
                     size="sm"
                     onClick={() => setCameraOpen(true)}
-                    disabled={logoUploading || loading}
+                    disabled={logoUploading || loading || companyEditingDisabled}
                     className="w-fit"
                   >
                     {t('common.captureWithCamera', 'Capture with Camera')}
@@ -331,7 +350,7 @@ export default function AdminSettings() {
               placeholder={t('common.enterCompanyName', 'Enter company name')}
               value={companyName}
               onChange={e => setCompanyName(e.target.value)}
-              disabled={loading || contextLoading}
+              disabled={loading || contextLoading || companyEditingDisabled}
             />
           </div>
           <div className="mb-4">
@@ -347,7 +366,7 @@ export default function AdminSettings() {
                       onChange={e => handleShiftChange(idx, 'name', e.target.value.toUpperCase())}
                       className="w-10 text-center font-bold"
                       placeholder={String.fromCharCode(65 + idx)}
-                      disabled={loading || contextLoading}
+                      disabled={loading || contextLoading || companyEditingDisabled}
                     />
                     <span className="text-xs text-muted-foreground">{t('common.shift', 'Shift')}</span>
                   </div>
@@ -358,7 +377,7 @@ export default function AdminSettings() {
                       onChange={e => handleShiftChange(idx, 'start', e.target.value)}
                       className="w-24"
                       step="60"
-                      disabled={loading || contextLoading}
+                      disabled={loading || contextLoading || companyEditingDisabled}
                     />
                     <span className="text-xs">{t('common.to', 'to')}</span>
                     <Input
@@ -367,7 +386,7 @@ export default function AdminSettings() {
                       onChange={e => handleShiftChange(idx, 'end', e.target.value)}
                       className="w-24"
                       step="60"
-                      disabled={loading || contextLoading}
+                      disabled={loading || contextLoading || companyEditingDisabled}
                     />
                   </div>
                 </div>
@@ -383,13 +402,13 @@ export default function AdminSettings() {
               placeholder={t('admin.settings.reportPlaceholder', 'Comma separated emails')}
               value={reportEmails}
               onChange={e => setReportEmails(e.target.value)}
-              disabled={loading || contextLoading}
+              disabled={loading || contextLoading || companyEditingDisabled}
             />
           </div>
           <Button
             type="button"
             onClick={handleSave}
-            disabled={loading || contextLoading}
+            disabled={loading || contextLoading || companyEditingDisabled}
             className="mt-2"
           >
             {loading || contextLoading ? t('common.saving', 'Saving...') : t('common.saveSettings', 'Save Settings')}

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/context/LanguageContext";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import firebaseApp from "@/lib/firebase";
+import { useAdmin } from "@/hooks/useAdmin";
 
 type TeamUser = {
   uid: string;
@@ -23,6 +24,7 @@ type TeamUser = {
 export default function ManageUsers() {
   const { t } = useLanguage();
   const auth = getAuth(firebaseApp);
+  const { isAdmin, claimsChecked } = useAdmin();
   const [teamUsers, setTeamUsers] = useState<TeamUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [newUserEmail, setNewUserEmail] = useState("");
@@ -51,12 +53,14 @@ export default function ManageUsers() {
     }
   }, [t]);
 
-  useEffect(() => {
-    void fetchUsers();
-  }, [fetchUsers]);
+useEffect(() => {
+  if (!isAdmin || !claimsChecked) return;
+  void fetchUsers();
+}, [fetchUsers, isAdmin, claimsChecked]);
 
   const handleCreateUser = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!isAdmin) return;
     if (!newUserEmail.trim()) {
       toast.error(t("admin.users.error.emailRequired", "Email is required"));
       return;
@@ -93,6 +97,7 @@ export default function ManageUsers() {
   const isRowLoading = (uid: string) => !!rowLoading[uid];
 
   const handleToggleDisabled = async (uid: string, disabled: boolean) => {
+    if (!isAdmin) return;
     setRowState(uid, true);
     try {
       await api.put(`/auth/users/${uid}`, { disabled });
@@ -107,6 +112,7 @@ export default function ManageUsers() {
   };
 
   const handleDeleteUser = async (uid: string) => {
+    if (!isAdmin) return;
     const confirmMessage = t(
       "admin.users.confirmDelete",
       "Remove this user? They will no longer be able to sign in.",
@@ -128,6 +134,7 @@ export default function ManageUsers() {
   };
 
   const handleResetPassword = async (uid: string) => {
+    if (!isAdmin) return;
     const confirmMessage = t(
       "admin.users.confirmReset",
       "Send a new temporary password to this user?",
@@ -146,6 +153,24 @@ export default function ManageUsers() {
       setRowState(uid, false);
     }
   };
+
+  if (!claimsChecked) {
+    return null;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="py-8 md:py-12 mx-auto max-w-2xl">
+        <Card>
+          <CardContent className="py-8">
+            <p className="text-center text-sm text-muted-foreground">
+              {t("admin.users.noAccess", "You need administrator privileges to manage users.")}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="py-4 md:py-8 space-y-6 mx-auto">
@@ -167,7 +192,7 @@ export default function ManageUsers() {
                   placeholder="user@example.com"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
-                  disabled={createUserLoading}
+                  disabled={createUserLoading || !isAdmin}
                 />
               </div>
               <div>
@@ -189,11 +214,11 @@ export default function ManageUsers() {
                   placeholder={t("admin.users.employeeCodePlaceholder", "Optional employee code")}
                   value={employeeCode}
                   onChange={(e) => setEmployeeCode(e.target.value)}
-                  disabled={createUserLoading}
+                  disabled={createUserLoading || !isAdmin}
                 />
               </div>
             </div>
-            <Button type="submit" disabled={createUserLoading}>
+            <Button type="submit" disabled={createUserLoading || !isAdmin}>
               {createUserLoading
                 ? t("admin.users.inviteButtonLoading", "Inviting...")
                 : t("admin.users.inviteButton", "Invite User")}
@@ -211,7 +236,7 @@ export default function ManageUsers() {
             onClick={() => {
               void fetchUsers();
             }}
-            disabled={usersLoading}
+            disabled={usersLoading || !isAdmin}
           >
             {usersLoading ? t("admin.users.refreshing", "Refreshing...") : t("admin.users.refresh", "Refresh list")}
           </Button>
@@ -256,7 +281,7 @@ export default function ManageUsers() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleToggleDisabled(user.uid, !user.disabled)}
-                              disabled={isRowLoading(user.uid) || isSelf}
+                              disabled={isRowLoading(user.uid) || isSelf || !isAdmin}
                             >
                               {user.disabled
                                 ? t("admin.users.actions.enable", "Enable")
@@ -266,7 +291,7 @@ export default function ManageUsers() {
                               size="sm"
                               variant="secondary"
                               onClick={() => handleResetPassword(user.uid)}
-                              disabled={isRowLoading(user.uid) || (isSelf && user.role === "admin")}
+                              disabled={isRowLoading(user.uid) || (isSelf && user.role === "admin") || !isAdmin}
                             >
                               {t("admin.users.actions.resetPassword", "Reset Password")}
                             </Button>
@@ -274,7 +299,7 @@ export default function ManageUsers() {
                               size="sm"
                               variant="destructive"
                               onClick={() => handleDeleteUser(user.uid)}
-                              disabled={isRowLoading(user.uid) || isSelf}
+                              disabled={isRowLoading(user.uid) || isSelf || !isAdmin}
                             >
                               {t("admin.users.actions.delete", "Remove")}
                             </Button>
