@@ -103,7 +103,15 @@ export class EmailService {
     companyName: string;
     fullName?: string;
   }) {
-    const adminEmail = process.env.LEAD_NOTIFICATION_TO!;
+    const adminEmail =
+      this.configService.get<string>('LEAD_NOTIFICATION_TO') ||
+      this.notificationsRecipient;
+
+    if (!adminEmail) {
+      this.logger.warn('Admin notification email not configured, skipping notification');
+      return;
+    }
+
     const subject = `🎉 New Ops-log Free Trial Signup: ${options.companyName}`;
     const textPart = this.buildSignupNotificationText(options);
     const htmlPart = this.buildSignupNotificationHtml(options);
