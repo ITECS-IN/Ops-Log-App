@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import companyLogo from '@/assets/companyLogo.png';
 import { Link } from 'react-router-dom';
 import {
   Factory,
@@ -756,15 +757,19 @@ export default function LandingPage() {
             {/* Left Section - Company Info */}
             <div className="sm:col-span-2 lg:col-span-1">
               <div className="flex items-center space-x-2 mb-4">
-                <AppLogo size={40} />
+               <AppLogo size={40}/>
                 <span className="text-xl font-bold text-white">Ops-log</span>
               </div>
               <p className="text-sm text-gray-400 mb-4 leading-relaxed">
                 A manufacturing operations management platform providing real-time production visibility, developed by
               </p>
               <div className="mb-4">
-                <p className="text-lg font-bold text-white mb-1">ITECS</p>
-                <p className="text-sm text-gray-400">Industrial Tech Solutions</p>
+               <img
+                  src={companyLogo}
+                  alt="Logo"
+                  style={{ width: 120, margin: 0, display: 'block' }}
+                  className="object-contain"
+                />
               </div>
               <div className="text-sm text-gray-400 leading-relaxed">
                 <p>320 Rue des Sorbiers,</p>
