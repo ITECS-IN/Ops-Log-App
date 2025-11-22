@@ -15,27 +15,27 @@ export class LinesController {
   constructor(private readonly linesService: LinesService) {}
 
   @Get()
-  findAll(@CompanyId() companyId: string) {
-    return this.linesService.findAll(companyId);
+  async findAll(@CompanyId() companyId: string) {
+    return await this.linesService.findAll(companyId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CompanyId() companyId: string) {
-    return this.linesService.findOne(id, companyId);
+  async findOne(@Param('id') id: string, @CompanyId() companyId: string) {
+    return await this.linesService.findOne(id, companyId);
   }
 
   @Post()
-  create(@Body() body: any, @CompanyId() companyId: string) {
-    return this.linesService.create(body, companyId);
+  async create(@Body() body: any, @CompanyId() companyId: string) {
+    return await this.linesService.create(body, companyId);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: any) {
-    return this.linesService.update(id, body);
+  async update(@Param('id') id: string, @Body() body: any) {
+    return await this.linesService.update(id, body);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.linesService.remove(id);
+  async remove(@Param('id') id: string) {
+    return await this.linesService.remove(id);
   }
 }

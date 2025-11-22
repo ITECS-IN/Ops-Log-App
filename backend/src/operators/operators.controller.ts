@@ -17,27 +17,27 @@ export class OperatorsController {
   constructor(private readonly operatorsService: OperatorsService) {}
 
   @Get()
-  findAll(@CompanyId() companyId: string) {
-    return this.operatorsService.findAll(companyId);
+  async findAll(@CompanyId() companyId: string) {
+    return await this.operatorsService.findAll(companyId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CompanyId() companyId: string) {
-    return this.operatorsService.findOne(id, companyId);
+  async findOne(@Param('id') id: string, @CompanyId() companyId: string) {
+    return await this.operatorsService.findOne(id, companyId);
   }
 
   @Post()
-  create(@Body() createDto: CreateOperatorDto, @CompanyId() companyId: string) {
-    return this.operatorsService.create(createDto, companyId);
+  async create(@Body() createDto: CreateOperatorDto, @CompanyId() companyId: string) {
+    return await this.operatorsService.create(createDto, companyId);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateDto: UpdateOperatorDto) {
-    return this.operatorsService.update(id, updateDto);
+  async update(@Param('id') id: string, @Body() updateDto: UpdateOperatorDto) {
+    return await this.operatorsService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.operatorsService.remove(id);
+  async remove(@Param('id') id: string) {
+    return await this.operatorsService.remove(id);
   }
 }

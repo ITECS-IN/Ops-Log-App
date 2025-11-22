@@ -17,27 +17,30 @@ export class MachinesController {
   constructor(private readonly machinesService: MachinesService) {}
 
   @Get()
-  findAll(@CompanyId() companyId: string) {
-    return this.machinesService.findAll(companyId);
+  async findAll(@CompanyId() companyId: string) {
+    return await this.machinesService.findAll(companyId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CompanyId() companyId: string) {
-    return this.machinesService.findOne(id, companyId);
+  async findOne(@Param('id') id: string, @CompanyId() companyId: string) {
+    return await this.machinesService.findOne(id, companyId);
   }
 
   @Post()
-  create(@Body() createDto: CreateMachineDto, @CompanyId() companyId: string) {
-    return this.machinesService.create(createDto, companyId);
+  async create(
+    @Body() createDto: CreateMachineDto,
+    @CompanyId() companyId: string,
+  ) {
+    return await this.machinesService.create(createDto, companyId);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateDto: UpdateMachineDto) {
-    return this.machinesService.update(id, updateDto);
+  async update(@Param('id') id: string, @Body() updateDto: UpdateMachineDto) {
+    return await this.machinesService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.machinesService.remove(id);
+  async remove(@Param('id') id: string) {
+    return await this.machinesService.remove(id);
   }
 }

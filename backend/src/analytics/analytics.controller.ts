@@ -7,35 +7,35 @@ export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Get('logs-per-machine')
-  getLogsPerMachine(@CompanyId('companyId') companyId: string) {
-    return this.analyticsService.getLogsPerMachine(companyId);
+  async getLogsPerMachine(@CompanyId('companyId') companyId: string) {
+    return await this.analyticsService.getLogsPerMachine(companyId);
   }
 
   @Get('downtime-per-machine')
-  getDowntimePerMachine(@CompanyId('companyId') companyId: string) {
-    return this.analyticsService.getDowntimePerMachine(companyId);
+  async getDowntimePerMachine(@CompanyId('companyId') companyId: string) {
+    return await this.analyticsService.getDowntimePerMachine(companyId);
   }
 
   @Get('severity-distribution')
-  getSeverityDistribution(@CompanyId('companyId') companyId: string) {
-    return this.analyticsService.getSeverityDistribution(companyId);
+  async getSeverityDistribution(@CompanyId('companyId') companyId: string) {
+    return await this.analyticsService.getSeverityDistribution(companyId);
   }
 
   @Get('downtime-trend')
-  getDowntimeTrend(
+  async getDowntimeTrend(
     @CompanyId('companyId') companyId: string,
     @Query('interval') interval: string,
   ) {
-    return this.analyticsService.getDowntimeTrend(companyId, interval);
+    return await this.analyticsService.getDowntimeTrend(companyId, interval);
   }
 
   @Get('issue-types')
-  getIssueTypes(@CompanyId('companyId') companyId: string) {
-    return this.analyticsService.getIssueTypes(companyId);
+  async getIssueTypes(@CompanyId('companyId') companyId: string) {
+    return await this.analyticsService.getIssueTypes(companyId);
   }
 
   @Get('operator-activity')
-  getOperatorActivity(@CompanyId('companyId') companyId: string) {
-    return this.analyticsService.getOperatorActivity(companyId);
+  async getOperatorActivity(@CompanyId('companyId') companyId: string) {
+    return await this.analyticsService.getOperatorActivity(companyId);
   }
 }

@@ -153,7 +153,7 @@ export class RecordsController {
   }
 
   @Get()
-  findAll(
+  async findAll(
     @Query('lineId') lineId?: string,
     @Query('machineId') machineId?: string,
     @Query('downtimeStart') downtimeStart?: string,
@@ -170,7 +170,7 @@ export class RecordsController {
     // Sanitize ObjectId filters: convert empty string to undefined
     const safeLineId = lineId === '' ? undefined : lineId;
     const safeMachineId = machineId === '' ? undefined : machineId;
-    return this.recordsService.findAll(
+    return await this.recordsService.findAll(
       {
         lineId: safeLineId,
         machineId: safeMachineId,
@@ -189,36 +189,36 @@ export class RecordsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CompanyId() companyId: string) {
-    return this.recordsService.findOne(id, companyId);
+  async findOne(@Param('id') id: string, @CompanyId() companyId: string) {
+    return await this.recordsService.findOne(id, companyId);
   }
 
   @Post()
-  create(@Body() createDto: CreateRecordDto, @CompanyId() companyId: string) {
-    return this.recordsService.create(createDto, companyId);
+  async create(@Body() createDto: CreateRecordDto, @CompanyId() companyId: string) {
+    return await this.recordsService.create(createDto, companyId);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateDto: UpdateRecordDto) {
-    return this.recordsService.update(id, updateDto);
+  async update(@Param('id') id: string, @Body() updateDto: UpdateRecordDto) {
+    return await this.recordsService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.recordsService.remove(id);
+  async remove(@Param('id') id: string) {
+    return await this.recordsService.remove(id);
   }
 
   // Optional: extra routes
   @Get('machine/:machineId')
-  findByMachine(
+  async findByMachine(
     @Param('machineId') machineId: string,
     @CompanyId() companyId: string,
   ) {
-    return this.recordsService.findByMachine(machineId, companyId);
+    return await this.recordsService.findByMachine(machineId, companyId);
   }
 
   @Get('status/open')
-  findOpen(@CompanyId() companyId: string) {
-    return this.recordsService.findOpen(companyId);
+  async findOpen(@CompanyId() companyId: string) {
+    return await this.recordsService.findOpen(companyId);
   }
 }
