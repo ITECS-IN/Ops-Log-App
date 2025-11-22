@@ -22,8 +22,19 @@ export class AuthService {
     private readonly emailService: EmailService,
   ) {}
 
-  async signup(body: { email: string; password: string; companyName: string }) {
-    // 1. Check if email already exists in MongoDB
+  async signup(body: {
+    email: string;
+    password: string;
+    companyName: string;
+    fullName?: string;
+  }) {
+    // 1. Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(body.email)) {
+      throw new HttpException('Invalid email format', 400);
+    }
+
+    // 2. Check if email already exists in MongoDB
     const existingUser = await this.userModel
       .findOne({ email: body.email })
       .exec();
@@ -32,13 +43,14 @@ export class AuthService {
       throw new HttpException('Email already exists', 409);
     }
 
-    // 2. Create user in Firebase
+    // 3. Create user in Firebase
     const userRecord = await admin.auth().createUser({
       email: body.email,
       password: body.password,
+      displayName: body.fullName,
     });
 
-    // 3. Create user document in MongoDB (without companyId yet)
+    // 4. Create user document in MongoDB (without companyId yet)
     const userDoc = await this.userModel.create({
       uid: userRecord.uid,
       email: userRecord.email,
@@ -48,16 +60,16 @@ export class AuthService {
       deletedAt: null,
     });
 
-    // 4. Create company in MongoDB
+    // 5. Create company in MongoDB
     const company = await this.companyModel.create({
       companyName: body.companyName,
     });
 
-    // 5. Link company to user in MongoDB
+    // 6. Link company to user in MongoDB
     userDoc.companyId = String(company._id);
     await userDoc.save();
 
-    // 6. Set custom claims (admin, companyId)
+    // 7. Set custom claims (admin, companyId)
     const companyId = String(company._id);
     await admin.auth().setCustomUserClaims(userRecord.uid, {
       admin: true,
@@ -65,7 +77,30 @@ export class AuthService {
       companyId,
     });
 
-    // 7. Return user and company info
+    // 8. Send welcome email to user
+    try {
+      await this.emailService.sendSignupWelcomeEmail({
+        to: body.email,
+        companyName: body.companyName,
+      });
+    } catch (error) {
+      // Log the error but don't fail the signup process
+      console.error('Failed to send welcome email:', error);
+    }
+
+    // 9. Send notification email to admin
+    try {
+      await this.emailService.sendSignupNotificationToAdmin({
+        userEmail: body.email,
+        companyName: body.companyName,
+        fullName: body.fullName,
+      });
+    } catch (error) {
+      // Log the error but don't fail the signup process
+      console.error('Failed to send admin notification:', error);
+    }
+
+    // 10. Return user and company info
     return {
       user: userRecord,
       company,
@@ -122,7 +157,8 @@ export class AuthService {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (
-          error.response?.data?.error?.message === 'INVALID_LOGIN_CREDENTIALS' ||
+          error.response?.data?.error?.message ===
+            'INVALID_LOGIN_CREDENTIALS' ||
           error.response?.data?.error?.message === 'INVALID_PASSWORD'
         ) {
           throw new HttpException('Current password is incorrect', 401);
@@ -226,9 +262,7 @@ export class AuthService {
     };
     await admin.auth().setCustomUserClaims(userRecord.uid, claims);
 
-    const company = await this.companyModel
-      .findById(companyId)
-      .lean();
+    const company = await this.companyModel.findById(companyId).lean();
 
     await this.emailService.sendUserWelcomeEmail({
       to: normalizedEmail,

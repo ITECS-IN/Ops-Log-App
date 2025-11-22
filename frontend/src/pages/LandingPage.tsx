@@ -96,6 +96,13 @@ export default function LandingPage() {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(leadForm.email)) {
+      toast.error(t('landing.modal.invalidEmail', 'Please enter a valid email address.'));
+      return;
+    }
+
     // For trial CTA, create account directly
     if (activeCta === 'trial') {
       if (!leadForm.company.trim()) {
@@ -117,8 +124,9 @@ export default function LandingPage() {
           email: leadForm.email,
           password: leadForm.password,
           companyName: leadForm.company,
+          fullName: leadForm.fullName,
         });
-        toast.success(t('landing.modal.accountCreated', 'Account created successfully! Please sign in to continue.'));
+        toast.success(t('landing.modal.accountCreated', 'Account created successfully! Check your email for a welcome message. Please sign in to continue.'));
         closeLeadModal();
         // Redirect to login after a short delay
         setTimeout(() => {

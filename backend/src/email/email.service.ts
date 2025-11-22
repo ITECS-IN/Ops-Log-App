@@ -85,6 +85,37 @@ export class EmailService {
     });
   }
 
+  async sendSignupWelcomeEmail(options: { to: string; companyName: string }) {
+    const subject = `Welcome to Ops-log! Your account is ready`;
+    const textPart = this.buildSignupWelcomeText(options);
+    const htmlPart = this.buildSignupWelcomeHtml(options);
+
+    await this.send({
+      to: options.to,
+      subject,
+      textPart,
+      htmlPart,
+    });
+  }
+
+  async sendSignupNotificationToAdmin(options: {
+    userEmail: string;
+    companyName: string;
+    fullName?: string;
+  }) {
+    const adminEmail = process.env.LEAD_NOTIFICATION_TO!;
+    const subject = `🎉 New Ops-log Free Trial Signup: ${options.companyName}`;
+    const textPart = this.buildSignupNotificationText(options);
+    const htmlPart = this.buildSignupNotificationHtml(options);
+
+    await this.send({
+      to: adminEmail,
+      subject,
+      textPart,
+      htmlPart,
+    });
+  }
+
   private async send(options: {
     to: string;
     subject: string;
@@ -319,6 +350,207 @@ export class EmailService {
             </div>
             <p>If you didn't request this, notify your Ops-log administrator immediately.</p>
             <p style="margin-bottom: 0;">— The Ops-log Team</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  private buildSignupWelcomeText(options: { to: string; companyName: string }) {
+    return [
+      `Welcome to Ops-log!`,
+      ``,
+      `Your account has been successfully created for ${options.companyName}.`,
+      ``,
+      `You can now sign in using:`,
+      `Email: ${options.to}`,
+      ``,
+      `Start tracking your manufacturing operations with:`,
+      `• Real-time machine operations monitoring`,
+      `• Downtime event tracking`,
+      `• Advanced analytics and KPIs`,
+      `• Multi-shift support`,
+      ``,
+      `Your 14-day free trial has started. Explore all features without any limitations.`,
+      ``,
+      `If you have any questions or need assistance, feel free to reach out to our support team.`,
+      ``,
+      `Best regards,`,
+      `The Ops-log Team`,
+    ].join('\n');
+  }
+
+  private buildSignupWelcomeHtml(options: { to: string; companyName: string }) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background: #f9fafb; color: #111827; margin: 0; padding: 0; }
+          .container { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
+          .card { background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+          .header { text-align: center; margin-bottom: 24px; }
+          .header h1 { color: #2563eb; margin: 0 0 8px 0; font-size: 28px; }
+          .welcome-box { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 24px; border-radius: 8px; margin: 24px 0; text-align: center; }
+          .welcome-box h2 { margin: 0 0 8px 0; font-size: 24px; }
+          .features { background: #f3f4f6; border-radius: 8px; padding: 20px; margin: 24px 0; }
+          .features ul { margin: 0; padding-left: 20px; }
+          .features li { margin: 8px 0; line-height: 1.6; }
+          .cta { text-align: center; margin: 24px 0; }
+          .cta a { display: inline-block; padding: 14px 28px; background: #2563eb; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; }
+          .footer { text-align: center; color: #6b7280; font-size: 14px; margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="card">
+            <div class="header">
+              <h1>🎉 Welcome to Ops-log!</h1>
+            </div>
+
+            <div class="welcome-box">
+              <h2>Your Account is Ready</h2>
+              <p style="margin: 0; opacity: 0.95;">${options.companyName}</p>
+            </div>
+
+            <p>Congratulations! Your Ops-log account has been successfully created.</p>
+
+            <p><strong>Login Email:</strong> ${options.to}</p>
+
+            <div class="features">
+              <h3 style="margin-top: 0; color: #111827;">What you can do with Ops-log:</h3>
+              <ul>
+                <li><strong>Real-time Monitoring</strong> - Track machine operations and downtime events as they happen</li>
+                <li><strong>Advanced Analytics</strong> - 6 interactive charts to visualize your production data</li>
+                <li><strong>KPI Dashboards</strong> - Monitor critical metrics like MTTR and equipment availability</li>
+                <li><strong>Multi-shift Support</strong> - Manage operations across different shifts seamlessly</li>
+                <li><strong>Complete Administration</strong> - Manage lines, machines, and operators from one interface</li>
+              </ul>
+            </div>
+
+            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 24px 0; border-radius: 4px;">
+              <p style="margin: 0;"><strong>🚀 Your 14-day free trial has started!</strong></p>
+              <p style="margin: 8px 0 0 0; font-size: 14px;">Explore all features without any limitations. No credit card required.</p>
+            </div>
+
+            <div class="cta">
+              <a href="${this.configService.get<string>('APP_URL') || 'https://ops-log.com'}/login" style="color: #fff;">Sign In Now</a>
+            </div>
+
+            <p>If you have any questions or need assistance getting started, our support team is here to help.</p>
+
+            <p style="margin-bottom: 0;">Best regards,<br><strong>The Ops-log Team</strong></p>
+
+            <div class="footer">
+              <p>This email was sent because you created an account on Ops-log.</p>
+              <p>If you didn't create this account, please contact us immediately.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  private buildSignupNotificationText(options: {
+    userEmail: string;
+    companyName: string;
+    fullName?: string;
+  }) {
+    const timestamp = new Date().toLocaleString('fr-FR', {
+      timeZone: 'Europe/Paris',
+      dateStyle: 'full',
+      timeStyle: 'long',
+    });
+
+    return [
+      `New Ops-log Free Trial Account Created!`,
+      ``,
+      `A new user has signed up for a free trial account.`,
+      ``,
+      `Client Details:`,
+      `${options.fullName ? `Name: ${options.fullName}` : ''}`,
+      `Email: ${options.userEmail}`,
+      `Company: ${options.companyName}`,
+      ``,
+      `Signup Date: ${timestamp}`,
+      `Account Type: Free Trial (14 days)`,
+      ``,
+      `This account was created via the landing page signup form.`,
+    ]
+      .filter((line) => line !== '')
+      .join('\n');
+  }
+
+  private buildSignupNotificationHtml(options: {
+    userEmail: string;
+    companyName: string;
+    fullName?: string;
+  }) {
+    const timestamp = new Date().toLocaleString('fr-FR', {
+      timeZone: 'Europe/Paris',
+      dateStyle: 'full',
+      timeStyle: 'long',
+    });
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background: #f9fafb; color: #111827; margin: 0; padding: 0; }
+          .container { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
+          .card { background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 24px; border-radius: 8px 8px 0 0; margin: -32px -32px 24px -32px; }
+          .header h1 { margin: 0; font-size: 24px; }
+          .info-box { background: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0; }
+          .info-row { padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
+          .info-row:last-child { border-bottom: none; }
+          .label { font-weight: 600; color: #374151; display: inline-block; min-width: 120px; }
+          .value { color: #111827; }
+          .badge { display: inline-block; padding: 4px 12px; background: #fef3c7; color: #92400e; border-radius: 12px; font-size: 14px; font-weight: 600; }
+          .footer { text-align: center; color: #6b7280; font-size: 14px; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="card">
+            <div class="header">
+              <h1>🎉 New Free Trial Signup</h1>
+            </div>
+
+            <p>A new user has just created a free trial account on Ops-log.</p>
+
+            <div class="info-box">
+              <h3 style="margin-top: 0; color: #111827;">Client Details</h3>
+              ${options.fullName ? `<div class="info-row"><span class="label">Name:</span> <span class="value">${options.fullName}</span></div>` : ''}
+              <div class="info-row">
+                <span class="label">Email:</span>
+                <span class="value"><a href="mailto:${options.userEmail}">${options.userEmail}</a></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Company:</span>
+                <span class="value"><strong>${options.companyName}</strong></span>
+              </div>
+              <div class="info-row">
+                <span class="label">Signup Date:</span>
+                <span class="value">${timestamp}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Account Type:</span>
+                <span class="badge">Free Trial - 14 Days</span>
+              </div>
+            </div>
+
+            <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 16px; margin: 24px 0; border-radius: 4px;">
+              <p style="margin: 0; color: #1e40af;"><strong>ℹ️ Note:</strong> This account was created via the landing page signup form.</p>
+            </div>
+
+            <div class="footer">
+              <p>This is an automated notification from Ops-log</p>
+              <p>ITECS - Industrial Tech Solutions</p>
+            </div>
           </div>
         </div>
       </body>
