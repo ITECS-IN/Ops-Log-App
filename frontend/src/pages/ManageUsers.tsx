@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, FormEvent } from "react";
+import { useEffect, useState, useCallback, type FormEvent } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
